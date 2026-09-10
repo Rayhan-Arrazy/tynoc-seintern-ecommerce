@@ -24,8 +24,8 @@ export default function CategoriesDropdown({ onClose }: CategoriesDropdownProps)
       try {
         const res = await fetch('/api/categories');
         if (res.ok) {
-          const data = await res.json();
-          setCategories(data);
+          const json = await res.json();
+          setCategories(json.data ?? []);
         }
       } catch (error) {
         console.error('Failed to fetch categories:', error);
