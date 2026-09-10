@@ -35,7 +35,7 @@ export default function ProductCard({ product }: ProductCardProps) {
   }
 
   return (
-    <Link href={`/products/${product.slug}`} className="group block">
+    <Link href={`/products/${product.id}`} className="group block">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
         <div className="relative aspect-square overflow-hidden bg-gray-100">
           <Image

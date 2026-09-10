@@ -24,9 +24,9 @@ export default function SearchPage() {
       setLoading(true);
       try {
         const res = await fetch(`/api/products?query=${encodeURIComponent(query)}`);
-        const data = await res.json();
+        const json = await res.json();
         if (!cancelled) {
-          setProducts(data.data ?? []);
+          setProducts(json.data?.data ?? []);
         }
       } catch {
         if (!cancelled) {

@@ -27,10 +27,11 @@ export default function ProductsPage() {
         });
 
         const res = await fetch(`/api/products?${params.toString()}`);
-        const data: PaginatedResponse<Product> = await res.json();
-        setProducts(data.data);
-        setTotalPages(data.totalPages);
-        setTotal(data.total);
+        const json = await res.json();
+        const result: PaginatedResponse<Product> = json.data ?? { data: [], total: 0, page: 1, limit: 10, totalPages: 0 };
+        setProducts(result.data);
+        setTotalPages(result.totalPages);
+        setTotal(result.total);
       } catch {
         setProducts([]);
       } finally {
