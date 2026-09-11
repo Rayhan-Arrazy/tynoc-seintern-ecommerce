@@ -5,6 +5,7 @@ import type {
   CartItem,
   WishlistItem,
   User,
+  UserWithPassword,
   SearchFilters,
   PaginatedResponse,
 } from "@/types";
@@ -28,7 +29,7 @@ export async function getAllProducts(
     }
 
     if (filters?.category) {
-      query = query.eq("categoryId", filters.category);
+      query = query.eq("categoryid", filters.category);
     }
 
     if (filters?.minPrice !== undefined) {
@@ -42,7 +43,7 @@ export async function getAllProducts(
     if (filters?.sortBy) {
       switch (filters.sortBy) {
         case "newest":
-          query = query.order("createdAt", { ascending: false });
+          query = query.order("created_at", { ascending: false });
           break;
         case "price-asc":
           query = query.order("price", { ascending: true });
@@ -55,7 +56,7 @@ export async function getAllProducts(
           break;
       }
     } else {
-      query = query.order("createdAt", { ascending: false });
+      query = query.order("created_at", { ascending: false });
     }
 
     query = query.range(start, end);
@@ -119,7 +120,7 @@ export async function getProductsByCategory(
     const { data, error } = await supabase
       .from("products")
       .select("*")
-      .eq("categoryId", categoryId)
+      .eq("categoryid", categoryId)
       .limit(limit || 50);
 
     if (error) throw error;
@@ -136,7 +137,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
     const { data, error } = await supabase
       .from("products")
       .select("*")
-      .eq("isFeatured", true);
+      .eq("isfeatured", true);
 
     if (error) throw error;
 
@@ -152,7 +153,7 @@ export async function getNewProducts(): Promise<Product[]> {
     const { data, error } = await supabase
       .from("products")
       .select("*")
-      .eq("isNew", true);
+      .eq("isnew", true);
 
     if (error) throw error;
 
@@ -168,7 +169,7 @@ export async function getSaleProducts(): Promise<Product[]> {
     const { data, error } = await supabase
       .from("products")
       .select("*")
-      .eq("isOnSale", true);
+      .eq("isonsale", true);
 
     if (error) throw error;
 
@@ -220,7 +221,7 @@ export async function updateProduct(
   try {
     const { data, error } = await (supabase
       .from("products") as any)
-      .update({ ...updates, updatedAt: new Date().toISOString() })
+      .update({ ...updates, updated_at: new Date().toISOString() })
       .eq("id", id)
       .select()
       .single();
@@ -523,7 +524,24 @@ export async function getUserById(id: string): Promise<User | null> {
   }
 }
 
-export async function createUser(user: User): Promise<User> {
+export async function getUserByEmail(email: string): Promise<UserWithPassword | null> {
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("email", email.toLowerCase())
+      .single();
+
+    if (error) throw error;
+
+    return data as UserWithPassword;
+  } catch (error) {
+    console.error("Error fetching user by email:", error);
+    return null;
+  }
+}
+
+export async function createUser(user: UserWithPassword): Promise<User> {
   try {
     const { data, error } = await supabase
       .from("users")

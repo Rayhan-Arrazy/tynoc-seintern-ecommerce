@@ -4,8 +4,10 @@ import type {
   CartItem,
   WishlistItem,
   User,
+  UserWithPassword,
   SearchFilters,
   PaginatedResponse,
+  Order,
 } from "@/types";
 
 const useSupabase = Boolean(
@@ -167,7 +169,33 @@ export async function getUserById(id: string): Promise<User | null> {
   return db.getUserById(id);
 }
 
-export async function createUser(user: User): Promise<User> {
+export async function createUser(user: UserWithPassword): Promise<User> {
   const db = await getDb();
   return db.createUser(user);
 }
+
+export async function getUserByEmail(email: string): Promise<UserWithPassword | null> {
+  const db = await getDb();
+  return db.getUserByEmail(email);
+}
+
+// ─── Orders ──────────────────────────────────────────────────────────────────
+
+export async function getOrders(userId: string): Promise<Order[]> {
+  const { getOrders } = await import("./order-operations");
+  return getOrders(userId);
+}
+
+export async function getOrderById(id: string): Promise<Order | null> {
+  const { getOrderById } = await import("./order-operations");
+  return getOrderById(id);
+}
+
+export async function createOrder(order: Order): Promise<Order> {
+  const { createOrder } = await import("./order-operations");
+  return createOrder(order);
+}
+
+// ─── Admin ────────────────────────────────────────────────────────────────────
+
+export { getDashboardStats } from "./admin-operations";

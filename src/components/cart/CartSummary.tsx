@@ -53,16 +53,13 @@ export default function CartSummary({ subtotal }: CartSummaryProps) {
         </div>
       </div>
 
-      <button
-        disabled
-        className="w-full mt-6 flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
+      <Link
+        href="/checkout"
+        className="w-full mt-6 flex items-center justify-center gap-2 bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 transition-colors"
       >
         <ShoppingBag className="w-5 h-5" />
         Checkout
-        <span className="text-xs bg-blue-500 px-2 py-0.5 rounded-full ml-1">
-          Coming Soon
-        </span>
-      </button>
+      </Link>
 
       <Link
         href="/products"

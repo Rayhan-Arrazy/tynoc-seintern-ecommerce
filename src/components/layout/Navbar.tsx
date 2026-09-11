@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import NotificationBell from '@/components/notifications/NotificationBell';
 import CategoriesDropdown from './CategoriesDropdown';
 
 export default function Navbar() {
@@ -91,6 +92,8 @@ export default function Navbar() {
                 </span>
               )}
             </Link>
+
+            <NotificationBell />
 
             <Link href="/cart" className="relative p-2 text-gray-700 hover:text-blue-600 transition-colors">
               <ShoppingBag className="w-5 h-5" />

@@ -5,13 +5,14 @@ import type {
   CartItem,
   WishlistItem,
   User,
+  UserWithPassword,
   SearchFilters,
   PaginatedResponse,
 } from "@/types";
 
 let categories: Category[] | null = null;
 let products: Product[] | null = null;
-let users: User[] | null = null;
+let users: UserWithPassword[] | null = null;
 let cartItems: CartItem[] = [];
 const wishlistItems: WishlistItem[] = [];
 
@@ -25,7 +26,7 @@ function ensureProducts(): Product[] {
   return products;
 }
 
-function ensureUsers(): User[] {
+function ensureUsers(): UserWithPassword[] {
   if (!users) users = [...seedUsers];
   return users;
 }
@@ -279,8 +280,14 @@ export async function getUserById(id: string): Promise<User | null> {
   return items.find((u) => u.id === id) || null;
 }
 
-export async function createUser(user: User): Promise<User> {
+export async function getUserByEmail(email: string): Promise<UserWithPassword | null> {
+  const items = ensureUsers();
+  return items.find((u) => u.email === email.toLowerCase()) || null;
+}
+
+export async function createUser(user: UserWithPassword): Promise<User> {
   const items = ensureUsers();
   items.push(user);
-  return user;
+  const { password: _, ...userWithoutPassword } = user;
+  return userWithoutPassword;
 }
