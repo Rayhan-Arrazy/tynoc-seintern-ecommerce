@@ -1,0 +1,148 @@
+-- ============================================================
+-- Supabase Schema for E-Commerce Store
+-- ============================================================
+-- Run this file to set up the database structure.
+-- After schema.sql, run seed.sql to populate sample data.
+
+-- ============================================================
+-- 1. Helper function: auto-update updated_at on row modification
+-- ============================================================
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW.updated_at = now();
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- ============================================================
+-- 2. Categories
+-- ============================================================
+CREATE TABLE categories (
+  id           uuid PRIMARY KEY,
+  name         text        NOT NULL,
+  slug         text        NOT NULL UNIQUE,
+  description  text,
+  image        text,
+  productcount integer     NOT NULL DEFAULT 0,
+  created_at   timestamptz NOT NULL DEFAULT now()
+);
+
+-- ============================================================
+-- 3. Products
+-- ============================================================
+CREATE TABLE products (
+  id             uuid PRIMARY KEY,
+  name           text        NOT NULL,
+  slug           text        NOT NULL UNIQUE,
+  description    text,
+  price          numeric     NOT NULL,
+  originalprice  numeric,
+  images         jsonb       NOT NULL DEFAULT '[]'::jsonb,
+  categoryid     uuid        NOT NULL REFERENCES categories(id) ON DELETE CASCADE,
+  category       jsonb       NOT NULL DEFAULT '{}'::jsonb,
+  stock          integer     NOT NULL DEFAULT 0,
+  rating         numeric,
+  reviewcount    integer     NOT NULL DEFAULT 0,
+  features       jsonb       NOT NULL DEFAULT '[]'::jsonb,
+  specifications jsonb       NOT NULL DEFAULT '{}'::jsonb,
+  tags           jsonb       NOT NULL DEFAULT '[]'::jsonb,
+  isfeatured     boolean     NOT NULL DEFAULT false,
+  isnew          boolean     NOT NULL DEFAULT false,
+  isonsale       boolean     NOT NULL DEFAULT false,
+  created_at     timestamptz NOT NULL DEFAULT now(),
+  updated_at     timestamptz NOT NULL DEFAULT now()
+);
+
+-- Auto-set updated_at on product updates
+CREATE TRIGGER set_products_updated_at
+  BEFORE UPDATE ON products
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Product indexes
+CREATE INDEX idx_products_categoryid ON products(categoryid);
+CREATE INDEX idx_products_isfeatured ON products(isfeatured);
+CREATE INDEX idx_products_isnew      ON products(isnew);
+CREATE INDEX idx_products_onsale     ON products(isonsale);
+
+-- ============================================================
+-- 4. Users
+-- ============================================================
+CREATE TABLE users (
+  id         uuid PRIMARY KEY,
+  name       text        NOT NULL,
+  email      text        NOT NULL UNIQUE,
+  avatar     text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- ============================================================
+-- 5. Cart
+-- ============================================================
+CREATE TABLE cart (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  productid  text        NOT NULL,
+  product    jsonb       NOT NULL DEFAULT '{}'::jsonb,
+  quantity   integer     NOT NULL DEFAULT 1,
+  userid     text        NOT NULL,
+  added_at   timestamptz NOT NULL DEFAULT now()
+);
+
+-- Cart indexes
+CREATE INDEX idx_cart_userid ON cart(userid);
+CREATE UNIQUE INDEX idx_cart_user_product ON cart(userid, productid);
+
+-- ============================================================
+-- 6. Wishlist
+-- ============================================================
+CREATE TABLE wishlist (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  productid  text        NOT NULL,
+  product    jsonb       NOT NULL DEFAULT '{}'::jsonb,
+  userid     text        NOT NULL,
+  added_at   timestamptz NOT NULL DEFAULT now()
+);
+
+-- Wishlist indexes
+CREATE INDEX idx_wishlist_userid ON wishlist(userid);
+CREATE UNIQUE INDEX idx_wishlist_user_product ON wishlist(userid, productid);
+
+-- ============================================================
+-- 7. Row Level Security (RLS)
+-- ============================================================
+-- Enable RLS on all tables (permissive policies for demo mode).
+
+ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users     ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cart      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wishlist  ENABLE ROW LEVEL SECURITY;
+
+-- Permissive policies: allow all operations for now.
+-- Replace these with stricter policies before going to production.
+
+CREATE POLICY "Allow all on categories"
+  ON categories FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Allow all on products"
+  ON products FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Allow all on users"
+  ON users FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Allow all on cart"
+  ON cart FOR ALL
+  USING (true)
+  WITH CHECK (true);
+
+CREATE POLICY "Allow all on wishlist"
+  ON wishlist FOR ALL
+  USING (true)
+  WITH CHECK (true);
