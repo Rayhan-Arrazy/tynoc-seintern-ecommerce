@@ -9,7 +9,7 @@ import type {
 } from "@/types";
 
 const useSupabase = Boolean(
-  process.env.SUPABASE_URL && process.env.SUPABASE_ANON_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 );
 
 async function getDb() {
