@@ -4,7 +4,7 @@ import {
   getWishlistItems,
   addToWishlist,
   removeFromWishlist,
-} from "@/lib/db/store";
+} from "@/lib/db";
 import type { ApiResponse, WishlistItem } from "@/types";
 
 const DEFAULT_USER_ID = "user-1";

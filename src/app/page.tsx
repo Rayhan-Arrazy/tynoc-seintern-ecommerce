@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import HeroSection from '@/components/product/HeroSection';
 import ProductGrid from '@/components/product/ProductGrid';
-import { getAllCategories, getFeaturedProducts, getNewProducts, getSaleProducts } from '@/lib/db/store';
+import { getAllCategories, getFeaturedProducts, getNewProducts, getSaleProducts } from '@/lib/db';
 import { ArrowRight } from 'lucide-react';
 
 export default async function Home() {

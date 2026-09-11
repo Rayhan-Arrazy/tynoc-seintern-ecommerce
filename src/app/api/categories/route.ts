@@ -1,6 +1,6 @@
 import { type NextRequest } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-import { getAllCategories, createCategory } from "@/lib/db/store";
+import { getAllCategories, createCategory } from "@/lib/db";
 import type { ApiResponse, Category } from "@/types";
 
 export async function GET(): Promise<Response> {

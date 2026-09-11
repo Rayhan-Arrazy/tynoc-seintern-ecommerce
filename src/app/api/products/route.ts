@@ -1,6 +1,6 @@
 import { type NextRequest } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-import { getAllProducts, createProduct } from "@/lib/db/store";
+import { getAllProducts, createProduct } from "@/lib/db";
 import { validateProduct } from "@/lib/utils/validation";
 import type { ApiResponse, PaginatedResponse, Product, SearchFilters } from "@/types";
 

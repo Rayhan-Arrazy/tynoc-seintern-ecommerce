@@ -1,6 +1,6 @@
 import { notFound } from 'next/navigation';
 import ProductGrid from '@/components/product/ProductGrid';
-import { getCategoryBySlug, getProductsByCategory } from '@/lib/db/store';
+import { getCategoryBySlug, getProductsByCategory } from '@/lib/db';
 
 interface CategoryPageProps {
   params: Promise<{ slug: string }>;

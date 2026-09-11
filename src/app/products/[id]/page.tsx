@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation';
 import ProductDetails from '@/components/product/ProductDetails';
 import RelatedProducts from '@/components/product/RelatedProducts';
-import { getProductById, getProductsByCategory } from '@/lib/db/store';
+import { getProductById, getProductsByCategory } from '@/lib/db';
 
 interface ProductPageProps {
   params: Promise<{ id: string }>;

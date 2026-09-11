@@ -5,7 +5,7 @@ import {
   addToCart,
   updateCartItem,
   removeFromCart,
-} from "@/lib/db/store";
+} from "@/lib/db";
 import type { ApiResponse, CartItem } from "@/types";
 
 const DEFAULT_USER_ID = "user-1";

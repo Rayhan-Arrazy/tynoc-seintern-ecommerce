@@ -1,5 +1,5 @@
 import { type NextRequest } from "next/server";
-import { getProductById, updateProduct, deleteProduct } from "@/lib/db/store";
+import { getProductById, updateProduct, deleteProduct } from "@/lib/db";
 import type { ApiResponse, Product } from "@/types";
 
 export async function GET(
