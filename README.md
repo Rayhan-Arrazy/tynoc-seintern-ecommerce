@@ -1,6 +1,6 @@
 # Tynoc - Full-Stack E-Commerce Platform
 
-A production-style full-stack e-commerce application built with Next.js, TypeScript, AWS DynamoDB, and Tailwind CSS. Features a complete storefront with product browsing, search, filtering, shopping cart, and wishlist functionality.
+A production-style full-stack e-commerce application built with Next.js, TypeScript, Supabase (PostgreSQL), and Tailwind CSS. Features a complete storefront with product browsing, search, filtering, shopping cart, and wishlist functionality.
 
 ## Features
 
@@ -33,7 +33,7 @@ A production-style full-stack e-commerce application built with Next.js, TypeScr
 
 - **Frontend:** Next.js 16, React 19, TypeScript
 - **Backend:** Next.js Route Handlers (API Routes)
-- **Database:** AWS DynamoDB (with in-memory fallback for development)
+- **Database:** Supabase (PostgreSQL) with DynamoDB and in-memory fallbacks
 - **Styling:** Tailwind CSS v4
 - **Icons:** Lucide React
 - **State Management:** React Context API
@@ -94,21 +94,27 @@ e-commerce/
 │   │   ├── CartContext.tsx           # Cart state management
 │   │   └── WishlistContext.tsx       # Wishlist state management
 │   ├── lib/
-│   │   ├── db/                       # Database layer
-│   │   │   ├── client.ts             # DynamoDB client setup
-│   │   │   ├── operations.ts         # DynamoDB CRUD operations
+│   │   ├── db/                       # Database layer (auto-switching)
+│   │   │   ├── index.ts             # Unified data layer
+│   │   │   ├── supabase.ts          # Supabase client
+│   │   │   ├── supabase-schema.ts   # Supabase TypeScript types
+│   │   │   ├── supabase-operations.ts # Supabase CRUD operations
+│   │   │   ├── client.ts            # DynamoDB client setup
+│   │   │   ├── operations.ts        # DynamoDB CRUD operations
 │   │   │   ├── store.ts             # In-memory data store
-│   │   │   └── seed.ts              # Seed data
+│   │   │   └── seed.ts             # Seed data
 │   │   └── utils/                    # Utility functions
 │   │       ├── index.ts              # General utilities
 │   │       └── validation.ts         # Input validation
 │   └── types/                        # TypeScript type definitions
 │       └── index.ts                  # All interfaces and types
+├── supabase/                         # Supabase SQL files
+│   ├── schema.sql                    # Database schema
+│   └── seed.sql                      # Seed data SQL
 ├── scripts/                          # Build/utility scripts
 │   └── seed.ts                       # Seed data re-export
 ├── .env.example                      # Environment variable template
 ├── next.config.ts                    # Next.js configuration
-├── tailwind.config.ts                # Tailwind CSS configuration
 ├── tsconfig.json                     # TypeScript configuration
 └── package.json                      # Project dependencies
 ```
@@ -116,9 +122,12 @@ e-commerce/
 ## Architecture
 
 ```
-User → Next.js Application → Server/API Layer → AWS DynamoDB
-                                ↓
-                         In-Memory Store (Development)
+User → Next.js Application → Server/API Layer → Unified Data Layer
+                                                        ↓
+                                          ┌─────────────┼─────────────┐
+                                          ↓             ↓             ↓
+                                      Supabase      DynamoDB     In-Memory
+                                     (PostgreSQL)               (Development)
 ```
 
 ### Data Flow
@@ -133,95 +142,60 @@ User → Next.js Application → Server/API Layer → AWS DynamoDB
 - **Client Components** for interactive features (cart, wishlist, filters)
 - **React Context** for global state management
 - **API Route Handlers** for backend logic with proper error handling
-- **In-memory data store** for development without DynamoDB
+- **Unified data layer** with automatic database switching based on environment
+- **In-memory data store** for development without any database
 
-## DynamoDB Setup
+## Supabase Setup
 
-### Tables Required
+### 1. Create a Supabase Project
 
-| Table | Partition Key | Sort Key | GSIs |
-|-------|--------------|----------|------|
-| `products` | `id` (S) | - | `categoryId-index` |
-| `categories` | `id` (S) | - | - |
-| `cart` | `id` (S) | - | `userId-index` (userId, productId) |
-| `wishlist` | `id` (S) | - | `userId-index` (userId, productId) |
-| `users` | `id` (S) | - | - |
+1. Go to [supabase.com](https://supabase.com) and sign in
+2. Click "New Project" and fill in the details
+3. Note your **Project URL** and **Anon Key** from the API settings
 
-### Creating Tables (AWS CLI)
+### 2. Run the SQL Schema
 
-```bash
-# Products table
-aws dynamodb create-table \
-  --table-name products \
-  --attribute-definitions \
-    AttributeName=id,AttributeType=S \
-    AttributeName=categoryId,AttributeType=S \
-  --key-schema AttributeName=id,KeyType=HASH \
-  --global-secondary-indexes \
-    IndexName=categoryId-index,KeySchema=[{AttributeName=categoryId,KeyType=HASH}],Projection={ProjectionType=ALL} \
-  --billing-mode PAY_PER_REQUEST
+1. Go to the SQL Editor in your Supabase dashboard
+2. Copy and run `supabase/schema.sql` to create all tables, indexes, and triggers
+3. Copy and run `supabase/seed.sql` to populate with sample data
 
-# Categories table
-aws dynamodb create-table \
-  --table-name categories \
-  --attribute-definitions AttributeName=id,AttributeType=S \
-  --key-schema AttributeName=id,KeyType=HASH \
-  --billing-mode PAY_PER_REQUEST
+### Tables Created
 
-# Cart table
-aws dynamodb create-table \
-  --table-name cart \
-  --attribute-definitions \
-    AttributeName=id,AttributeType=S \
-    AttributeName=userId,AttributeType=S \
-    AttributeName=productId,AttributeType=S \
-  --key-schema AttributeName=id,KeyType=HASH \
-  --global-secondary-indexes \
-    IndexName=userId-index,KeySchema=[{AttributeName=userId,KeyType=HASH},{AttributeName=productId,KeyType=RANGE}],Projection={ProjectionType=ALL} \
-  --billing-mode PAY_PER_REQUEST
+| Table | Description |
+|-------|-------------|
+| `categories` | 6 product categories |
+| `products` | 24 products with full details |
+| `users` | Demo user account |
+| `cart` | Shopping cart items |
+| `wishlist` | Saved products |
 
-# Wishlist table (same structure as cart)
-aws dynamodb create-table \
-  --table-name wishlist \
-  --attribute-definitions \
-    AttributeName=id,AttributeType=S \
-    AttributeName=userId,AttributeType=S \
-    AttributeName=productId,AttributeType=S \
-  --key-schema AttributeName=id,KeyType=HASH \
-  --global-secondary-indexes \
-    IndexName=userId-index,KeySchema=[{AttributeName=userId,KeyType=HASH},{AttributeName=productId,KeyType=RANGE}],Projection={ProjectionType=ALL} \
-  --billing-mode PAY_PER_REQUEST
+### 3. Environment Variables
 
-# Users table
-aws dynamodb create-table \
-  --table-name users \
-  --attribute-definitions AttributeName=id,AttributeType=S \
-  --key-schema AttributeName=id,KeyType=HASH \
-  --billing-mode PAY_PER_REQUEST
+Add to your `.env.local`:
+
+```env
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
 ```
+
+> **Note:** If `SUPABASE_URL` and `SUPABASE_ANON_KEY` are not set, the app automatically falls back to the in-memory data store.
 
 ## Environment Variables
 
 Create a `.env.local` file based on `.env.example`:
 
 ```env
-# AWS DynamoDB Configuration
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your-access-key-id
-AWS_SECRET_ACCESS_KEY=your-secret-access-key
+# Supabase (Primary Database)
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_ANON_KEY=your-anon-key
 
-# Optional: For local DynamoDB
-# AWS_DYNAMODB_ENDPOINT=http://localhost:8000
-
-# DynamoDB Table Names
-PRODUCTS_TABLE=products
-CATEGORIES_TABLE=categories
-CART_TABLE=cart
-WISHLIST_TABLE=wishlist
-USERS_TABLE=users
+# AWS DynamoDB (Optional Alternative)
+# AWS_REGION=us-east-1
+# AWS_ACCESS_KEY_ID=your-access-key-id
+# AWS_SECRET_ACCESS_KEY=your-secret-access-key
 ```
 
-> **Note:** The application includes an in-memory data store that works without AWS credentials for development purposes.
+> **Note:** The app automatically detects which database to use. Set Supabase vars for PostgreSQL, DynamoDB vars for AWS, or neither for the in-memory store.
 
 ## Installation
 
