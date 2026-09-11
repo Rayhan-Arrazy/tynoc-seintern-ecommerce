@@ -1,30 +1,25 @@
 -- ============================================================
 -- Seed Data for E-Commerce Store
 -- ============================================================
--- Run after schema.sql. Uses fixed IDs so foreign keys resolve.
+-- Run after schema.sql. Uses deterministic UUIDs so foreign keys resolve.
 
 -- ============================================================
 -- Categories
 -- ============================================================
 INSERT INTO categories (id, name, slug, description, image, productcount, created_at)
 VALUES
-  ('cat-electronics',     'Electronics',      'electronics',      'Latest gadgets and tech',             'https://picsum.photos/seed/cat-electronics/600/600',       4, '2024-01-01T00:00:00Z'),
-  ('cat-clothing',        'Clothing',         'clothing',         'Fashion and apparel',                  'https://picsum.photos/seed/cat-clothing/600/600',          4, '2024-01-01T00:00:00Z'),
-  ('cat-home-kitchen',    'Home & Kitchen',   'home-kitchen',     'Furniture and appliances',             'https://picsum.photos/seed/cat-home-kitchen/600/600',      4, '2024-01-01T00:00:00Z'),
-  ('cat-sports-outdoors', 'Sports & Outdoors', 'sports-outdoors', 'Athletic gear and equipment',          'https://picsum.photos/seed/cat-sports-outdoors/600/600',   4, '2024-01-01T00:00:00Z'),
-  ('cat-books',           'Books',            'books',            'Fiction and non-fiction',              'https://picsum.photos/seed/cat-books/600/600',             4, '2024-01-01T00:00:00Z'),
-  ('cat-beauty',          'Beauty',           'beauty',           'Skincare and cosmetics',               'https://picsum.photos/seed/cat-beauty/600/600',            4, '2024-01-01T00:00:00Z')
+  ('550e8400-e29b-41d4-a716-446655440001', 'Electronics',      'electronics',      'Latest gadgets and tech',             'https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440001/600/600',       4, '2024-01-01T00:00:00Z'),
+  ('550e8400-e29b-41d4-a716-446655440002', 'Clothing',         'clothing',         'Fashion and apparel',                  'https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440002/600/600',          4, '2024-01-01T00:00:00Z'),
+  ('550e8400-e29b-41d4-a716-446655440003', 'Home & Kitchen',   'home-kitchen',     'Furniture and appliances',             'https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440003/600/600',      4, '2024-01-01T00:00:00Z'),
+  ('550e8400-e29b-41d4-a716-446655440004', 'Sports & Outdoors', 'sports-outdoors', 'Athletic gear and equipment',          'https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440004/600/600',   4, '2024-01-01T00:00:00Z'),
+  ('550e8400-e29b-41d4-a716-446655440005', 'Books',            'books',            'Fiction and non-fiction',              'https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440005/600/600',             4, '2024-01-01T00:00:00Z'),
+  ('550e8400-e29b-41d4-a716-446655440006', 'Beauty',           'beauty',           'Skincare and cosmetics',               'https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440006/600/600',            4, '2024-01-01T00:00:00Z')
 ON CONFLICT (id) DO UPDATE SET
   name         = EXCLUDED.name,
   slug         = EXCLUDED.slug,
   description  = EXCLUDED.description,
   image        = EXCLUDED.image,
   productcount = EXCLUDED.productcount;
-
--- ============================================================
--- Helper: build a category JSONB object
--- ============================================================
--- We inline the JSONB per row to keep seed.sql self-contained.
 
 -- ============================================================
 -- Products
@@ -34,15 +29,15 @@ ON CONFLICT (id) DO UPDATE SET
 
 INSERT INTO products (id, name, slug, description, price, originalprice, images, categoryid, category, stock, rating, reviewcount, features, specifications, tags, isfeatured, isnew, isonsale, created_at, updated_at)
 VALUES (
-  'prod-001',
+  'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
   'Wireless Noise-Cancelling Headphones',
   'wireless-noise-cancelling-headphones',
   'Premium over-ear headphones with active noise cancellation, 30-hour battery life, and Hi-Res Audio support. Perfect for commuters and audiophiles alike.',
   279.99,
   349.99,
-  '["https://picsum.photos/seed/prod-001/600/600"]'::jsonb,
-  'cat-electronics',
-  '{"id":"cat-electronics","name":"Electronics","slug":"electronics","description":"Latest gadgets and tech","image":"https://picsum.photos/seed/cat-electronics/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440001',
+  '{"id":"550e8400-e29b-41d4-a716-446655440001","name":"Electronics","slug":"electronics","description":"Latest gadgets and tech","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440001/600/600","productCount":4}'::jsonb,
   45,
   4.7,
   1283,
@@ -56,15 +51,15 @@ VALUES (
   '2024-11-20T14:30:00Z'
 ),
 (
-  'prod-002',
+  'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e',
   'Ultra-Slim 15" Laptop',
   'ultra-slim-15-laptop',
   'Powerful and portable laptop featuring the latest 13th-gen processor, 16GB RAM, and a stunning 2K display. Weighs under 3 lbs for effortless carry.',
   1199.00,
   1199.00,
-  '["https://picsum.photos/seed/prod-002/600/600"]'::jsonb,
-  'cat-electronics',
-  '{"id":"cat-electronics","name":"Electronics","slug":"electronics","description":"Latest gadgets and tech","image":"https://picsum.photos/seed/cat-electronics/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440001',
+  '{"id":"550e8400-e29b-41d4-a716-446655440001","name":"Electronics","slug":"electronics","description":"Latest gadgets and tech","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440001/600/600","productCount":4}'::jsonb,
   22,
   4.5,
   847,
@@ -78,15 +73,15 @@ VALUES (
   '2024-11-15T10:00:00Z'
 ),
 (
-  'prod-003',
+  'c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f',
   'Smart Fitness Watch Pro',
   'smart-fitness-watch-pro',
   'Advanced fitness tracker with GPS, heart-rate monitoring, sleep analysis, and 7-day battery. Water-resistant to 50m for swimmers.',
   199.99,
   249.99,
-  '["https://picsum.photos/seed/prod-003/600/600"]'::jsonb,
-  'cat-electronics',
-  '{"id":"cat-electronics","name":"Electronics","slug":"electronics","description":"Latest gadgets and tech","image":"https://picsum.photos/seed/cat-electronics/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440001',
+  '{"id":"550e8400-e29b-41d4-a716-446655440001","name":"Electronics","slug":"electronics","description":"Latest gadgets and tech","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440001/600/600","productCount":4}'::jsonb,
   67,
   4.3,
   2156,
@@ -100,15 +95,15 @@ VALUES (
   '2024-10-10T16:45:00Z'
 ),
 (
-  'prod-004',
+  'd4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80',
   '4K Ultra HD Action Camera',
   '4k-ultra-hd-action-camera',
   'Rugged 4K action camera with image stabilisation, waterproof housing, and Wi-Fi connectivity. Capture every adventure in cinematic detail.',
   329.00,
   329.00,
-  '["https://picsum.photos/seed/prod-004/600/600"]'::jsonb,
-  'cat-electronics',
-  '{"id":"cat-electronics","name":"Electronics","slug":"electronics","description":"Latest gadgets and tech","image":"https://picsum.photos/seed/cat-electronics/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f80/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440001',
+  '{"id":"550e8400-e29b-41d4-a716-446655440001","name":"Electronics","slug":"electronics","description":"Latest gadgets and tech","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440001/600/600","productCount":4}'::jsonb,
   34,
   4.6,
   562,
@@ -126,15 +121,15 @@ VALUES (
 
 INSERT INTO products (id, name, slug, description, price, originalprice, images, categoryid, category, stock, rating, reviewcount, features, specifications, tags, isfeatured, isnew, isonsale, created_at, updated_at)
 VALUES (
-  'prod-005',
+  'e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8091',
   'Classic Oxford Button-Down Shirt',
   'classic-oxford-button-down-shirt',
   'Timeless oxford cotton shirt with a tailored fit. Wrinkle-resistant fabric makes it ideal for the office or casual weekends.',
   59.99,
   79.99,
-  '["https://picsum.photos/seed/prod-005/600/600"]'::jsonb,
-  'cat-clothing',
-  '{"id":"cat-clothing","name":"Clothing","slug":"clothing","description":"Fashion and apparel","image":"https://picsum.photos/seed/cat-clothing/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8091/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440002',
+  '{"id":"550e8400-e29b-41d4-a716-446655440002","name":"Clothing","slug":"clothing","description":"Fashion and apparel","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440002/600/600","productCount":4}'::jsonb,
   88,
   4.4,
   734,
@@ -148,15 +143,15 @@ VALUES (
   '2024-09-25T14:00:00Z'
 ),
 (
-  'prod-006',
+  'f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f809102',
   'High-Waist Stretch Leggings',
   'high-waist-stretch-leggings',
   'Buttery-soft high-waist leggings with 4-way stretch. Squat-proof, moisture-wicking, and perfect for yoga or everyday wear.',
   44.99,
   44.99,
-  '["https://picsum.photos/seed/prod-006/600/600"]'::jsonb,
-  'cat-clothing',
-  '{"id":"cat-clothing","name":"Clothing","slug":"clothing","description":"Fashion and apparel","image":"https://picsum.photos/seed/cat-clothing/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f809102/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440002',
+  '{"id":"550e8400-e29b-41d4-a716-446655440002","name":"Clothing","slug":"clothing","description":"Fashion and apparel","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440002/600/600","productCount":4}'::jsonb,
   120,
   4.8,
   3412,
@@ -170,15 +165,15 @@ VALUES (
   '2024-11-05T09:15:00Z'
 ),
 (
-  'prod-007',
+  'a7b8c9d0-e1f2-4a3b-4c5d-6e7f80910213',
   'Waterproof Trail Running Jacket',
   'waterproof-trail-running-jacket',
   'Lightweight, fully-seam-sealed jacket with breathable membrane. Packs into its own pocket for easy storage on the go.',
   149.00,
   189.00,
-  '["https://picsum.photos/seed/prod-007/600/600"]'::jsonb,
-  'cat-clothing',
-  '{"id":"cat-clothing","name":"Clothing","slug":"clothing","description":"Fashion and apparel","image":"https://picsum.photos/seed/cat-clothing/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/a7b8c9d0-e1f2-4a3b-4c5d-6e7f80910213/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440002',
+  '{"id":"550e8400-e29b-41d4-a716-446655440002","name":"Clothing","slug":"clothing","description":"Fashion and apparel","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440002/600/600","productCount":4}'::jsonb,
   41,
   4.6,
   289,
@@ -192,15 +187,15 @@ VALUES (
   '2024-11-18T13:00:00Z'
 ),
 (
-  'prod-008',
+  'b8c9d0e1-f2a3-4b4c-5d6e-7f8091021324',
   'Merino Wool Crew Socks (3-Pack)',
   'merino-wool-crew-socks-3-pack',
   'Ultra-soft merino wool socks with cushioned sole and arch support. Temperature-regulating and odour-resistant for all-day comfort.',
   28.99,
   28.99,
-  '["https://picsum.photos/seed/prod-008/600/600"]'::jsonb,
-  'cat-clothing',
-  '{"id":"cat-clothing","name":"Clothing","slug":"clothing","description":"Fashion and apparel","image":"https://picsum.photos/seed/cat-clothing/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/b8c9d0e1-f2a3-4b4c-5d6e-7f8091021324/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440002',
+  '{"id":"550e8400-e29b-41d4-a716-446655440002","name":"Clothing","slug":"clothing","description":"Fashion and apparel","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440002/600/600","productCount":4}'::jsonb,
   200,
   4.7,
   1587,
@@ -218,15 +213,15 @@ VALUES (
 
 INSERT INTO products (id, name, slug, description, price, originalprice, images, categoryid, category, stock, rating, reviewcount, features, specifications, tags, isfeatured, isnew, isonsale, created_at, updated_at)
 VALUES (
-  'prod-009',
+  'c9d0e1f2-a3b4-4c5d-6e7f-809102132435',
   'Stainless Steel French Press Coffee Maker',
   'stainless-steel-french-press-coffee-maker',
   'Double-wall insulated French press that brews rich, full-bodied coffee in 4 minutes. Makes 8 cups of café-quality coffee at home.',
   39.99,
   49.99,
-  '["https://picsum.photos/seed/prod-009/600/600"]'::jsonb,
-  'cat-home-kitchen',
-  '{"id":"cat-home-kitchen","name":"Home & Kitchen","slug":"home-kitchen","description":"Furniture and appliances","image":"https://picsum.photos/seed/cat-home-kitchen/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/c9d0e1f2-a3b4-4c5d-6e7f-809102132435/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440003',
+  '{"id":"550e8400-e29b-41d4-a716-446655440003","name":"Home & Kitchen","slug":"home-kitchen","description":"Furniture and appliances","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440003/600/600","productCount":4}'::jsonb,
   73,
   4.5,
   2891,
@@ -240,15 +235,15 @@ VALUES (
   '2024-10-28T12:00:00Z'
 ),
 (
-  'prod-010',
+  'd0e1f2a3-b4c5-4d6e-7f80-910213243546',
   'Ergonomic Office Chair with Lumbar Support',
   'ergonomic-office-chair-with-lumbar-support',
   'Fully adjustable mesh office chair with breathable back, adjustable lumbar, 4D armrests, and reclining seat. Supports up to 300 lbs.',
   549.00,
   549.00,
-  '["https://picsum.photos/seed/prod-010/600/600"]'::jsonb,
-  'cat-home-kitchen',
-  '{"id":"cat-home-kitchen","name":"Home & Kitchen","slug":"home-kitchen","description":"Furniture and appliances","image":"https://picsum.photos/seed/cat-home-kitchen/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/d0e1f2a3-b4c5-4d6e-7f80-910213243546/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440003',
+  '{"id":"550e8400-e29b-41d4-a716-446655440003","name":"Home & Kitchen","slug":"home-kitchen","description":"Furniture and appliances","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440003/600/600","productCount":4}'::jsonb,
   15,
   4.8,
   4521,
@@ -262,15 +257,15 @@ VALUES (
   '2024-11-10T09:30:00Z'
 ),
 (
-  'prod-011',
+  'e1f2a3b4-c5d6-4e7f-8091-021324354657',
   'Robot Vacuum & Mop Combo',
   'robot-vacuum-mop-combo',
   'Smart robot vacuum with LiDAR navigation, 2500Pa suction, and simultaneous mopping. App-controlled with voice assistant support.',
   399.99,
   499.99,
-  '["https://picsum.photos/seed/prod-011/600/600"]'::jsonb,
-  'cat-home-kitchen',
-  '{"id":"cat-home-kitchen","name":"Home & Kitchen","slug":"home-kitchen","description":"Furniture and appliances","image":"https://picsum.photos/seed/cat-home-kitchen/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/e1f2a3b4-c5d6-4e7f-8091-021324354657/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440003',
+  '{"id":"550e8400-e29b-41d4-a716-446655440003","name":"Home & Kitchen","slug":"home-kitchen","description":"Furniture and appliances","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440003/600/600","productCount":4}'::jsonb,
   28,
   4.4,
   1834,
@@ -284,15 +279,15 @@ VALUES (
   '2024-11-22T16:00:00Z'
 ),
 (
-  'prod-012',
+  'f2a3b4c5-d6e7-4f80-9102-132435465768',
   'Ceramic Non-Stick Cookware Set (10-Piece)',
   'ceramic-non-stick-cookware-set-10-piece',
   'PFOA-free ceramic cookware set with even heat distribution. Includes frypans, saucepans, stockpot, and glass lids. Oven safe to 400°F.',
   189.99,
   249.99,
-  '["https://picsum.photos/seed/prod-012/600/600"]'::jsonb,
-  'cat-home-kitchen',
-  '{"id":"cat-home-kitchen","name":"Home & Kitchen","slug":"home-kitchen","description":"Furniture and appliances","image":"https://picsum.photos/seed/cat-home-kitchen/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/f2a3b4c5-d6e7-4f80-9102-132435465768/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440003',
+  '{"id":"550e8400-e29b-41d4-a716-446655440003","name":"Home & Kitchen","slug":"home-kitchen","description":"Furniture and appliances","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440003/600/600","productCount":4}'::jsonb,
   37,
   4.3,
   956,
@@ -310,15 +305,15 @@ VALUES (
 
 INSERT INTO products (id, name, slug, description, price, originalprice, images, categoryid, category, stock, rating, reviewcount, features, specifications, tags, isfeatured, isnew, isonsale, created_at, updated_at)
 VALUES (
-  'prod-013',
+  'a3b4c5d6-e7f8-4091-0213-243546576879',
   'Carbon Fiber Road Bike Frame',
   'carbon-fiber-road-bike-frame',
   'Lightweight T800 carbon fibre road frame with internal cable routing and tapered head tube. Available in sizes S, M, L.',
   899.00,
   899.00,
-  '["https://picsum.photos/seed/prod-013/600/600"]'::jsonb,
-  'cat-sports-outdoors',
-  '{"id":"cat-sports-outdoors","name":"Sports & Outdoors","slug":"sports-outdoors","description":"Athletic gear and equipment","image":"https://picsum.photos/seed/cat-sports-outdoors/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/a3b4c5d6-e7f8-4091-0213-243546576879/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440004',
+  '{"id":"550e8400-e29b-41d4-a716-446655440004","name":"Sports & Outdoors","slug":"sports-outdoors","description":"Athletic gear and equipment","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440004/600/600","productCount":4}'::jsonb,
   12,
   4.7,
   178,
@@ -332,15 +327,15 @@ VALUES (
   '2024-11-12T10:00:00Z'
 ),
 (
-  'prod-014',
+  'b4c5d6e7-f809-4102-1324-35465768798a',
   '2-Person Ultralight Camping Tent',
   '2-person-ultralight-camping-tent',
   'Freestanding ultralight tent weighing just 1.5 kg. Double-layer waterproof design with mesh inner for ventilation. Sets up in under 5 minutes.',
   259.99,
   299.99,
-  '["https://picsum.photos/seed/prod-014/600/600"]'::jsonb,
-  'cat-sports-outdoors',
-  '{"id":"cat-sports-outdoors","name":"Sports & Outdoors","slug":"sports-outdoors","description":"Athletic gear and equipment","image":"https://picsum.photos/seed/cat-sports-outdoors/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/b4c5d6e7-f809-4102-1324-35465768798a/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440004',
+  '{"id":"550e8400-e29b-41d4-a716-446655440004","name":"Sports & Outdoors","slug":"sports-outdoors","description":"Athletic gear and equipment","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440004/600/600","productCount":4}'::jsonb,
   19,
   4.5,
   643,
@@ -354,15 +349,15 @@ VALUES (
   '2024-11-08T14:20:00Z'
 ),
 (
-  'prod-015',
+  'c5d6e7f8-0910-4213-2435-465768798a9b',
   'Adjustable Dumbbell Set (5-52.5 lbs)',
   'adjustable-dumbbell-set-5-52-5-lbs',
   'Space-saving adjustable dumbbells replacing 15 sets of weights. Quick-change dial adjusts from 5 to 52.5 lbs in 2.5 lb increments.',
   349.00,
   429.00,
-  '["https://picsum.photos/seed/prod-015/600/600"]'::jsonb,
-  'cat-sports-outdoors',
-  '{"id":"cat-sports-outdoors","name":"Sports & Outdoors","slug":"sports-outdoors","description":"Athletic gear and equipment","image":"https://picsum.photos/seed/cat-sports-outdoors/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/c5d6e7f8-0910-4213-2435-465768798a9b/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440004',
+  '{"id":"550e8400-e29b-41d4-a716-446655440004","name":"Sports & Outdoors","slug":"sports-outdoors","description":"Athletic gear and equipment","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440004/600/600","productCount":4}'::jsonb,
   24,
   4.6,
   2178,
@@ -376,15 +371,15 @@ VALUES (
   '2024-09-15T10:30:00Z'
 ),
 (
-  'prod-016',
+  'd6e7f809-1021-4324-3546-5768798a9b0c',
   'Insulated Stainless Steel Water Bottle (32 oz)',
   'insulated-stainless-steel-water-bottle-32-oz',
   'Triple-insulated water bottle keeps drinks cold for 24 hours or hot for 12. Leak-proof cap with wide mouth for easy cleaning.',
   34.99,
   34.99,
-  '["https://picsum.photos/seed/prod-016/600/600"]'::jsonb,
-  'cat-sports-outdoors',
-  '{"id":"cat-sports-outdoors","name":"Sports & Outdoors","slug":"sports-outdoors","description":"Athletic gear and equipment","image":"https://picsum.photos/seed/cat-sports-outdoors/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/d6e7f809-1021-4324-3546-5768798a9b0c/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440004',
+  '{"id":"550e8400-e29b-41d4-a716-446655440004","name":"Sports & Outdoors","slug":"sports-outdoors","description":"Athletic gear and equipment","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440004/600/600","productCount":4}'::jsonb,
   156,
   4.8,
   4523,
@@ -402,15 +397,15 @@ VALUES (
 
 INSERT INTO products (id, name, slug, description, price, originalprice, images, categoryid, category, stock, rating, reviewcount, features, specifications, tags, isfeatured, isnew, isonsale, created_at, updated_at)
 VALUES (
-  'prod-017',
+  'e7f80910-2132-4435-4657-68798a9b0c1d',
   'The Art of Clean Code',
   'the-art-of-clean-code',
   'A practical guide to writing maintainable, readable, and efficient code. Covers refactoring patterns, testing strategies, and architecture principles.',
   39.99,
   39.99,
-  '["https://picsum.photos/seed/prod-017/600/600"]'::jsonb,
-  'cat-books',
-  '{"id":"cat-books","name":"Books","slug":"books","description":"Fiction and non-fiction","image":"https://picsum.photos/seed/cat-books/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/e7f80910-2132-4435-4657-68798a9b0c1d/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440005',
+  '{"id":"550e8400-e29b-41d4-a716-446655440005","name":"Books","slug":"books","description":"Fiction and non-fiction","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440005/600/600","productCount":4}'::jsonb,
   85,
   4.9,
   3267,
@@ -424,15 +419,15 @@ VALUES (
   '2024-10-20T12:00:00Z'
 ),
 (
-  'prod-018',
+  'f8091021-3243-4546-5768-798a9b0c1d2e',
   'Mindful Running: A Guide to Meditative Movement',
   'mindful-running-a-guide-to-meditative-movement',
   'Discover the intersection of mindfulness and running. Learn breathing techniques, mental training, and how to turn every run into a moving meditation.',
   18.99,
   24.99,
-  '["https://picsum.photos/seed/prod-018/600/600"]'::jsonb,
-  'cat-books',
-  '{"id":"cat-books","name":"Books","slug":"books","description":"Fiction and non-fiction","image":"https://picsum.photos/seed/cat-books/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/f8091021-3243-4546-5768-798a9b0c1d2e/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440005',
+  '{"id":"550e8400-e29b-41d4-a716-446655440005","name":"Books","slug":"books","description":"Fiction and non-fiction","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440005/600/600","productCount":4}'::jsonb,
   62,
   4.3,
   412,
@@ -446,15 +441,15 @@ VALUES (
   '2024-11-01T14:30:00Z'
 ),
 (
-  'prod-019',
+  '09102132-4354-4657-6879-8a9b0c1d2e3f',
   'The Midnight Garden',
   'the-midnight-garden',
   'A hauntingly beautiful novel about love, loss, and the secrets hidden in an overgrown garden. Winner of the 2024 Literary Prize.',
   22.99,
   22.99,
-  '["https://picsum.photos/seed/prod-019/600/600"]'::jsonb,
-  'cat-books',
-  '{"id":"cat-books","name":"Books","slug":"books","description":"Fiction and non-fiction","image":"https://picsum.photos/seed/cat-books/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/09102132-4354-4657-6879-8a9b0c1d2e3f/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440005',
+  '{"id":"550e8400-e29b-41d4-a716-446655440005","name":"Books","slug":"books","description":"Fiction and non-fiction","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440005/600/600","productCount":4}'::jsonb,
   48,
   4.6,
   1843,
@@ -468,15 +463,15 @@ VALUES (
   '2024-11-20T09:00:00Z'
 ),
 (
-  'prod-020',
+  '10213243-5465-4768-798a-9b0c1d2e3f40',
   'The Complete Cookbook for Young Scientists',
   'the-complete-cookbook-for-young-scientists',
   'Over 75 recipes that blend cooking with science experiments. Learn the chemistry behind baking, emulsions, and fermentation.',
   26.99,
   32.99,
-  '["https://picsum.photos/seed/prod-020/600/600"]'::jsonb,
-  'cat-books',
-  '{"id":"cat-books","name":"Books","slug":"books","description":"Fiction and non-fiction","image":"https://picsum.photos/seed/cat-books/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/10213243-5465-4768-798a-9b0c1d2e3f40/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440005',
+  '{"id":"550e8400-e29b-41d4-a716-446655440005","name":"Books","slug":"books","description":"Fiction and non-fiction","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440005/600/600","productCount":4}'::jsonb,
   70,
   4.7,
   876,
@@ -494,15 +489,15 @@ VALUES (
 
 INSERT INTO products (id, name, slug, description, price, originalprice, images, categoryid, category, stock, rating, reviewcount, features, specifications, tags, isfeatured, isnew, isonsale, created_at, updated_at)
 VALUES (
-  'prod-021',
+  '21324354-6576-4879-8a9b-0c1d2e3f4051',
   'Vitamin C Brightening Serum',
   'vitamin-c-brightening-serum',
   'Lightweight serum with 20% L-ascorbic acid, vitamin E, and ferulic acid. Fades dark spots, evens skin tone, and boosts radiance.',
   38.00,
   38.00,
-  '["https://picsum.photos/seed/prod-021/600/600"]'::jsonb,
-  'cat-beauty',
-  '{"id":"cat-beauty","name":"Beauty","slug":"beauty","description":"Skincare and cosmetics","image":"https://picsum.photos/seed/cat-beauty/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/21324354-6576-4879-8a9b-0c1d2e3f4051/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440006',
+  '{"id":"550e8400-e29b-41d4-a716-446655440006","name":"Beauty","slug":"beauty","description":"Skincare and cosmetics","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440006/600/600","productCount":4}'::jsonb,
   94,
   4.7,
   5123,
@@ -516,15 +511,15 @@ VALUES (
   '2024-11-18T11:30:00Z'
 ),
 (
-  'prod-022',
+  '32435465-7687-498a-9b0c-1d2e3f405162',
   'Retinol Night Repair Cream',
   'retinol-night-repair-cream',
   'Rich night cream with encapsulated retinol (0.5%), hyaluronic acid, and peptides. Reduces fine lines while you sleep without irritation.',
   52.00,
   64.00,
-  '["https://picsum.photos/seed/prod-022/600/600"]'::jsonb,
-  'cat-beauty',
-  '{"id":"cat-beauty","name":"Beauty","slug":"beauty","description":"Skincare and cosmetics","image":"https://picsum.photos/seed/cat-beauty/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/32435465-7687-498a-9b0c-1d2e3f405162/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440006',
+  '{"id":"550e8400-e29b-41d4-a716-446655440006","name":"Beauty","slug":"beauty","description":"Skincare and cosmetics","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440006/600/600","productCount":4}'::jsonb,
   53,
   4.5,
   2341,
@@ -538,15 +533,15 @@ VALUES (
   '2024-11-05T15:00:00Z'
 ),
 (
-  'prod-023',
+  '43546576-8798-4a9b-0c1d-2e3f40516273',
   'Hydrating Hyaluronic Acid Moisturiser',
   'hydrating-hyaluronic-acid-moisturiser',
   'Gel-cream moisturiser with triple-weight hyaluronic acid, squalane, and ceramides. 72-hour hydration without heaviness.',
   32.00,
   32.00,
-  '["https://picsum.photos/seed/prod-023/600/600"]'::jsonb,
-  'cat-beauty',
-  '{"id":"cat-beauty","name":"Beauty","slug":"beauty","description":"Skincare and cosmetics","image":"https://picsum.photos/seed/cat-beauty/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/43546576-8798-4a9b-0c1d-2e3f40516273/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440006',
+  '{"id":"550e8400-e29b-41d4-a716-446655440006","name":"Beauty","slug":"beauty","description":"Skincare and cosmetics","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440006/600/600","productCount":4}'::jsonb,
   110,
   4.8,
   3890,
@@ -560,15 +555,15 @@ VALUES (
   '2024-11-22T10:00:00Z'
 ),
 (
-  'prod-024',
+  '54657687-989a-4b0c-1d2e-3f4051627384',
   'Matte Liquid Lipstick Duo',
   'matte-liquid-lipstick-duo',
   'Long-wear matte liquid lipstick set with two complementary shades. Infused with vitamin E for comfortable, non-drying wear up to 12 hours.',
   28.99,
   34.99,
-  '["https://picsum.photos/seed/prod-024/600/600"]'::jsonb,
-  'cat-beauty',
-  '{"id":"cat-beauty","name":"Beauty","slug":"beauty","description":"Skincare and cosmetics","image":"https://picsum.photos/seed/cat-beauty/600/600","productCount":4}'::jsonb,
+  '["https://picsum.photos/seed/54657687-989a-4b0c-1d2e-3f4051627384/600/600"]'::jsonb,
+  '550e8400-e29b-41d4-a716-446655440006',
+  '{"id":"550e8400-e29b-41d4-a716-446655440006","name":"Beauty","slug":"beauty","description":"Skincare and cosmetics","image":"https://picsum.photos/seed/550e8400-e29b-41d4-a716-446655440006/600/600","productCount":4}'::jsonb,
   77,
   4.4,
   1256,
@@ -587,7 +582,7 @@ VALUES (
 -- ============================================================
 INSERT INTO users (id, name, email, avatar, created_at)
 VALUES
-  ('user-1', 'Demo User', 'demo@example.com', 'https://picsum.photos/seed/avatar/100/100', '2024-01-01T00:00:00Z')
+  ('660e8400-e29b-41d4-a716-446655440099', 'Demo User', 'demo@example.com', 'https://picsum.photos/seed/avatar/100/100', '2024-01-01T00:00:00Z')
 ON CONFLICT (id) DO UPDATE SET
   name       = EXCLUDED.name,
   email      = EXCLUDED.email,

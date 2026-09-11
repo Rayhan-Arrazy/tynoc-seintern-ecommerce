@@ -1,12 +1,8 @@
 -- ============================================================
 -- Supabase Schema for E-Commerce Store
 -- ============================================================
--- Run this file to set up the database structure.
--- After schema.sql, run seed.sql to populate sample data.
 
--- ============================================================
--- 1. Helper function: auto-update updated_at on row modification
--- ============================================================
+-- Helper function: auto-update updated_at on row modification
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -15,9 +11,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- ============================================================
--- 2. Categories
--- ============================================================
+-- Categories
 CREATE TABLE categories (
   id           uuid PRIMARY KEY,
   name         text        NOT NULL,
@@ -28,9 +22,7 @@ CREATE TABLE categories (
   created_at   timestamptz NOT NULL DEFAULT now()
 );
 
--- ============================================================
--- 3. Products
--- ============================================================
+-- Products
 CREATE TABLE products (
   id             uuid PRIMARY KEY,
   name           text        NOT NULL,
@@ -54,21 +46,17 @@ CREATE TABLE products (
   updated_at     timestamptz NOT NULL DEFAULT now()
 );
 
--- Auto-set updated_at on product updates
 CREATE TRIGGER set_products_updated_at
   BEFORE UPDATE ON products
   FOR EACH ROW
   EXECUTE FUNCTION update_updated_at_column();
 
--- Product indexes
 CREATE INDEX idx_products_categoryid ON products(categoryid);
 CREATE INDEX idx_products_isfeatured ON products(isfeatured);
 CREATE INDEX idx_products_isnew      ON products(isnew);
 CREATE INDEX idx_products_onsale     ON products(isonsale);
 
--- ============================================================
--- 4. Users
--- ============================================================
+-- Users
 CREATE TABLE users (
   id         uuid PRIMARY KEY,
   name       text        NOT NULL,
@@ -77,9 +65,7 @@ CREATE TABLE users (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- ============================================================
--- 5. Cart
--- ============================================================
+-- Cart
 CREATE TABLE cart (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   productid  text        NOT NULL,
@@ -89,13 +75,10 @@ CREATE TABLE cart (
   added_at   timestamptz NOT NULL DEFAULT now()
 );
 
--- Cart indexes
 CREATE INDEX idx_cart_userid ON cart(userid);
 CREATE UNIQUE INDEX idx_cart_user_product ON cart(userid, productid);
 
--- ============================================================
--- 6. Wishlist
--- ============================================================
+-- Wishlist
 CREATE TABLE wishlist (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   productid  text        NOT NULL,
@@ -104,45 +87,18 @@ CREATE TABLE wishlist (
   added_at   timestamptz NOT NULL DEFAULT now()
 );
 
--- Wishlist indexes
 CREATE INDEX idx_wishlist_userid ON wishlist(userid);
 CREATE UNIQUE INDEX idx_wishlist_user_product ON wishlist(userid, productid);
 
--- ============================================================
--- 7. Row Level Security (RLS)
--- ============================================================
--- Enable RLS on all tables (permissive policies for demo mode).
-
+-- Row Level Security
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE users     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE cart      ENABLE ROW LEVEL SECURITY;
 ALTER TABLE wishlist  ENABLE ROW LEVEL SECURITY;
 
--- Permissive policies: allow all operations for now.
--- Replace these with stricter policies before going to production.
-
-CREATE POLICY "Allow all on categories"
-  ON categories FOR ALL
-  USING (true)
-  WITH CHECK (true);
-
-CREATE POLICY "Allow all on products"
-  ON products FOR ALL
-  USING (true)
-  WITH CHECK (true);
-
-CREATE POLICY "Allow all on users"
-  ON users FOR ALL
-  USING (true)
-  WITH CHECK (true);
-
-CREATE POLICY "Allow all on cart"
-  ON cart FOR ALL
-  USING (true)
-  WITH CHECK (true);
-
-CREATE POLICY "Allow all on wishlist"
-  ON wishlist FOR ALL
-  USING (true)
-  WITH CHECK (true);
+CREATE POLICY "Allow all on categories" ON categories FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on products"   ON products  FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on users"      ON users     FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on cart"       ON cart      FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on wishlist"   ON wishlist  FOR ALL USING (true) WITH CHECK (true);
