@@ -1,10 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Package, Loader2, ArrowRight, ShoppingBag } from 'lucide-react';
 import type { Order, OrderStatus } from '@/types';
 import { formatPrice, formatDate } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 const statusColors: Record<OrderStatus, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
@@ -15,29 +17,42 @@ const statusColors: Record<OrderStatus, string> = {
 };
 
 export default function OrdersPage() {
+  const router = useRouter();
+  const { state: authState } = useAuth();
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchOrders();
-  }, []);
+    if (authState.loading) return;
 
-  async function fetchOrders() {
-    try {
-      setLoading(true);
-      const res = await fetch('/api/orders?userId=user-1');
-      if (!res.ok) throw new Error('Failed to fetch orders');
-      const data = await res.json();
-      setOrders(data.data ?? []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
+    if (!authState.user) {
+      router.push('/auth/login');
+      return;
     }
-  }
 
-  if (loading) {
+    let cancelled = false;
+
+    async function loadOrders() {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/orders?userId=${authState.user!.id}`);
+        if (!res.ok) throw new Error('Failed to fetch orders');
+        const data = await res.json();
+        if (!cancelled) setOrders(data.data ?? []);
+      } catch (err) {
+        if (!cancelled) setError(err instanceof Error ? err.message : 'An error occurred');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    loadOrders();
+
+    return () => { cancelled = true; };
+  }, [authState.user, authState.loading, router]);
+
+  if (loading || authState.loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">
@@ -54,7 +69,7 @@ export default function OrdersPage() {
         <div className="text-center">
           <p className="text-red-600 mb-4">{error}</p>
           <button
-            onClick={fetchOrders}
+            onClick={() => window.location.reload()}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
             Try again

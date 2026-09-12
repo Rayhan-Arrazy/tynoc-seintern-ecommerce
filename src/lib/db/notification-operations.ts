@@ -1,33 +1,33 @@
 import { v4 as uuidv4 } from 'uuid';
 import type { Notification } from '@/types';
 
-let notifications: Notification[] = [
+const notifications: Notification[] = [
   {
     id: uuidv4(),
     userId: 'user-1',
     type: 'system',
     title: 'Welcome to Tynoc!',
-    message: 'Thanks for joining. Explore our latest products and exclusive deals.',
+    message: 'Thanks for joining Tynoc. Explore our latest products and exclusive deals.',
     read: false,
-    createdAt: new Date(Date.now() - 86400000 * 2).toISOString(),
+    createdAt: '2026-09-10T08:00:00.000Z',
   },
   {
     id: uuidv4(),
     userId: 'user-1',
     type: 'order',
-    title: 'Your order has been shipped',
-    message: 'Order #ORD-001 is on its way. Track your shipment for updates.',
+    title: 'Order Shipped',
+    message: 'Your order #ORD-8A3F has been shipped via FedEx. Track: FX123456789',
     read: false,
-    createdAt: new Date(Date.now() - 86400000).toISOString(),
+    createdAt: '2026-09-11T14:30:00.000Z',
   },
   {
     id: uuidv4(),
     userId: 'user-1',
     type: 'promotion',
-    title: '50% off summer sale',
-    message: 'Enjoy half off on selected summer items. Limited time offer!',
+    title: 'Flash Sale: Up to 50% Off',
+    message: "Don't miss our biggest sale of the season. Ends Sunday!",
     read: true,
-    createdAt: new Date(Date.now() - 86400000 * 5).toISOString(),
+    createdAt: '2026-09-08T10:00:00.000Z',
   },
 ];
 

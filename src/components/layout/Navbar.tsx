@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import { useAuth } from '@/context/AuthContext';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import CategoriesDropdown from './CategoriesDropdown';
 
@@ -18,6 +19,7 @@ export default function Navbar() {
 
   const { state: cartState } = useCart();
   const { state: wishlistState } = useWishlist();
+  const { state: authState } = useAuth();
 
   const cartCount = cartState.items?.length ?? 0;
   const wishlistCount = wishlistState.items?.length ?? 0;
@@ -104,8 +106,13 @@ export default function Navbar() {
               )}
             </Link>
 
-            <Link href="/account" className="hidden sm:block p-2 text-gray-700 hover:text-blue-600 transition-colors">
+            <Link href="/account" className="hidden sm:flex items-center gap-2 p-2 text-gray-700 hover:text-blue-600 transition-colors">
               <User className="w-5 h-5" />
+              {authState.user ? (
+                <span className="text-sm font-medium">{authState.user.name.split(' ')[0]}</span>
+              ) : (
+                <span className="text-sm font-medium">Login</span>
+              )}
             </Link>
 
             {/* Mobile Menu Toggle */}
@@ -162,7 +169,7 @@ export default function Navbar() {
               onClick={() => setMobileMenuOpen(false)}
               className="block py-2 text-gray-700 hover:text-blue-600 font-medium"
             >
-              Account
+              {authState.user ? authState.user.name : 'Account'}
             </Link>
           </div>
         </div>

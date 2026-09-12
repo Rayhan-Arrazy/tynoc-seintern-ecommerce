@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ShoppingCart, Loader2 } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import CheckoutForm from '@/components/checkout/CheckoutForm';
 import OrderSummary from '@/components/checkout/OrderSummary';
 import type { Address, PaymentInfo } from '@/types';
 
 export default function CheckoutPage() {
   const router = useRouter();
+  const { state: authState } = useAuth();
   const { state, getSubtotal } = useCart();
   const { items, loading } = state;
 
@@ -34,10 +36,14 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (!loading && items.length === 0) {
-      router.push('/cart');
+    if (!loading && !authState.loading) {
+      if (!authState.user) {
+        router.push('/auth/login');
+      } else if (items.length === 0) {
+        router.push('/cart');
+      }
     }
-  }, [loading, items, router]);
+  }, [loading, authState.user, authState.loading, items, router]);
 
   function validate(): boolean {
     const newErrors: Record<string, string> = {};
@@ -108,7 +114,7 @@ export default function CheckoutPage() {
     }
   }
 
-  if (loading) {
+  if (loading || authState.loading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
         <div className="text-center">

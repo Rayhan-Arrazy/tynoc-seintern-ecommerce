@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {
   Package,
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react';
 import type { Order, Notification } from '@/types';
 import { formatPrice, formatDate } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 const statusColors: Record<string, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
@@ -26,47 +28,52 @@ const statusColors: Record<string, string> = {
 type Tab = 'profile' | 'orders' | 'notifications' | 'settings';
 
 export default function AccountPage() {
+  const router = useRouter();
+  const { state: authState, logout } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>('profile');
   const [orders, setOrders] = useState<Order[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loadingOrders, setLoadingOrders] = useState(true);
   const [loadingNotifications, setLoadingNotifications] = useState(true);
-  const [isLoggedIn] = useState(true);
+  const isLoggedIn = !!authState.user;
 
   useEffect(() => {
-    fetchOrders();
-    fetchNotifications();
-  }, []);
+    if (!isLoggedIn || !authState.user) return;
 
-  async function fetchOrders() {
-    try {
-      setLoadingOrders(true);
-      const res = await fetch('/api/orders?userId=user-1');
-      if (res.ok) {
-        const data = await res.json();
-        setOrders(data.data ?? []);
-      }
-    } catch {
-      // silent
-    } finally {
-      setLoadingOrders(false);
-    }
-  }
+    let cancelled = false;
 
-  async function fetchNotifications() {
-    try {
-      setLoadingNotifications(true);
-      const res = await fetch('/api/notifications?userId=user-1');
-      if (res.ok) {
-        const data = await res.json();
-        setNotifications(data.data ?? []);
+    async function loadData() {
+      try {
+        setLoadingOrders(true);
+        setLoadingNotifications(true);
+        const [ordersRes, notificationsRes] = await Promise.all([
+          fetch(`/api/orders?userId=${authState.user!.id}`),
+          fetch(`/api/notifications?userId=${authState.user!.id}`),
+        ]);
+        if (!cancelled) {
+          if (ordersRes.ok) {
+            const data = await ordersRes.json();
+            setOrders(data.data ?? []);
+          }
+          if (notificationsRes.ok) {
+            const data = await notificationsRes.json();
+            setNotifications(data.data ?? []);
+          }
+        }
+      } catch {
+        // silent
+      } finally {
+        if (!cancelled) {
+          setLoadingOrders(false);
+          setLoadingNotifications(false);
+        }
       }
-    } catch {
-      // silent
-    } finally {
-      setLoadingNotifications(false);
     }
-  }
+
+    loadData();
+
+    return () => { cancelled = true; };
+  }, [isLoggedIn, authState.user]);
 
   async function markNotificationRead(id: string) {
     try {
@@ -121,11 +128,11 @@ export default function AccountPage() {
             {/* User Card */}
             <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
               <div className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center text-lg font-bold">
-                DU
+                {authState.user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
               </div>
               <div>
-                <p className="font-semibold text-gray-900">Demo User</p>
-                <p className="text-sm text-gray-500">demo@example.com</p>
+                <p className="font-semibold text-gray-900">{authState.user?.name || 'User'}</p>
+                <p className="text-sm text-gray-500">{authState.user?.email || ''}</p>
               </div>
             </div>
 
@@ -161,7 +168,10 @@ export default function AccountPage() {
             </nav>
 
             <div className="mt-6 pt-4 border-t border-gray-100">
-              <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors">
+              <button
+                onClick={() => { logout(); router.push('/'); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+              >
                 <LogOut className="w-5 h-5" />
                 <span>Sign Out</span>
               </button>
@@ -184,12 +194,12 @@ export default function AccountPage() {
 
                 <div className="flex items-center gap-5 mb-6">
                   <div className="w-20 h-20 rounded-full bg-blue-600 text-white flex items-center justify-center text-2xl font-bold">
-                    DU
+                    {authState.user?.name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || 'U'}
                   </div>
                   <div>
-                    <h3 className="text-xl font-semibold text-gray-900">Demo User</h3>
-                    <p className="text-gray-500">demo@example.com</p>
-                    <p className="text-xs text-gray-400 mt-1">Member since January 2024</p>
+                    <h3 className="text-xl font-semibold text-gray-900">{authState.user?.name || 'User'}</h3>
+                    <p className="text-gray-500">{authState.user?.email || ''}</p>
+                    <p className="text-xs text-gray-400 mt-1">Member since {authState.user?.createdAt ? new Date(authState.user.createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}</p>
                   </div>
                 </div>
 
@@ -198,7 +208,7 @@ export default function AccountPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>
                     <input
                       type="text"
-                      value="Demo User"
+                      value={authState.user?.name || ''}
                       readOnly
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50"
                     />
@@ -207,7 +217,7 @@ export default function AccountPage() {
                     <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                     <input
                       type="email"
-                      value="demo@example.com"
+                      value={authState.user?.email || ''}
                       readOnly
                       className="w-full px-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50"
                     />

@@ -1,22 +1,32 @@
 import Link from 'next/link';
 import HeroSection from '@/components/product/HeroSection';
 import ProductGrid from '@/components/product/ProductGrid';
-import { getAllCategories, getFeaturedProducts, getNewProducts, getSaleProducts } from '@/lib/db';
+import FlashSale from '@/components/product/FlashSale';
+import BestSellers from '@/components/product/BestSellers';
+import DiscountedProducts from '@/components/product/DiscountedProducts';
+import { getAllCategories, getFeaturedProducts, getNewProducts, getSaleProducts, getAllProducts } from '@/lib/db';
 import { ArrowRight } from 'lucide-react';
 
 export default async function Home() {
-  const [featured, newArrivals, saleProducts, categories] = await Promise.all([
+  const [featured, newArrivals, saleProducts, categories, allProductsData] = await Promise.all([
     getFeaturedProducts(),
     getNewProducts(),
     getSaleProducts(),
     getAllCategories(),
+    getAllProducts({ query: '', category: '', minPrice: 0, maxPrice: 999999, sortBy: 'newest', page: 1, limit: 50 }),
   ]);
+
+  const allProducts = allProductsData.data;
 
   return (
     <div>
       <HeroSection />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        {saleProducts.length > 0 && (
+          <FlashSale products={saleProducts} />
+        )}
+
         {featured.length > 0 && (
           <section className="mb-16">
             <div className="flex items-center justify-between mb-8">
@@ -32,6 +42,8 @@ export default async function Home() {
           </section>
         )}
 
+        <BestSellers products={allProducts} />
+
         {newArrivals.length > 0 && (
           <section className="mb-16">
             <div className="flex items-center justify-between mb-8">
@@ -46,6 +58,8 @@ export default async function Home() {
             <ProductGrid products={newArrivals} />
           </section>
         )}
+
+        <DiscountedProducts products={allProducts} />
 
         {categories.length > 0 && (
           <section className="mb-16">
@@ -82,21 +96,6 @@ export default async function Home() {
                 </Link>
               ))}
             </div>
-          </section>
-        )}
-
-        {saleProducts.length > 0 && (
-          <section className="mb-16">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">Sale Products</h2>
-              <Link
-                href="/products"
-                className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
-              >
-                View All <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <ProductGrid products={saleProducts} />
           </section>
         )}
       </div>

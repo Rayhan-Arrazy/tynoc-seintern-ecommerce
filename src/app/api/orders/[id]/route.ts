@@ -1,14 +1,13 @@
 import { type NextRequest } from "next/server";
-import { getOrderById } from "@/lib/db/order-operations";
+import { getOrderById } from "@/lib/db";
 import type { ApiResponse, Order } from "@/types";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ): Promise<Response> {
   try {
     const { id } = await params;
-
     const order = await getOrderById(id);
 
     if (!order) {

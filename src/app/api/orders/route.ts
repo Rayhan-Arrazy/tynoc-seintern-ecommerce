@@ -3,9 +3,9 @@ import { v4 as uuidv4 } from "uuid";
 import {
   getOrders,
   createOrder,
-  getCartItems,
   clearCart,
 } from "@/lib/db";
+import { createNotification } from "@/lib/db/notification-operations";
 import type { ApiResponse, Order, OrderItem, CartItem } from "@/types";
 
 const DEFAULT_USER_ID = "user-1";
@@ -97,6 +97,13 @@ export async function POST(
     };
 
     const created = await createOrder(order);
+
+    await createNotification({
+      userId: DEFAULT_USER_ID,
+      type: 'order',
+      title: 'Order Confirmed',
+      message: `Your order #${created.id.slice(0, 8).toUpperCase()} has been placed successfully.`,
+    });
 
     await clearCart(DEFAULT_USER_ID);
 
