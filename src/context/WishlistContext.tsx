@@ -51,7 +51,7 @@ export function WishlistProvider({ children }: { children: ReactNode }) {
       const res = await fetch('/api/wishlist', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: product.id }),
+        body: JSON.stringify({ productId: product.id, product }),
       });
       if (!res.ok) throw new Error('Failed to add item to wishlist');
       const data = await res.json();
