@@ -87,12 +87,6 @@ export default function LoginPage() {
             Create one
           </Link>
         </p>
-
-        <div className="mt-4 p-3 bg-gray-50 rounded-md text-xs text-gray-500">
-          <p className="font-medium">Demo credentials:</p>
-          <p>Email: demo@example.com</p>
-          <p>Password: password123</p>
-        </div>
       </div>
     </div>
   );

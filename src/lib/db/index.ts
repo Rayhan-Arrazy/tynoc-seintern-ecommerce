@@ -166,17 +166,37 @@ export async function removeFromWishlist(
 
 export async function getUserById(id: string): Promise<User | null> {
   const db = await getDb();
-  return db.getUserById(id);
+  const user = await db.getUserById(id);
+  if (user) return user;
+  if (useSupabase) {
+    const fallback = await import("./store");
+    return fallback.getUserById(id);
+  }
+  return null;
 }
 
 export async function createUser(user: UserWithPassword): Promise<User> {
   const db = await getDb();
-  return db.createUser(user);
+  try {
+    return await db.createUser(user);
+  } catch (error) {
+    if (useSupabase) {
+      const fallback = await import("./store");
+      return fallback.createUser(user);
+    }
+    throw error;
+  }
 }
 
 export async function getUserByEmail(email: string): Promise<UserWithPassword | null> {
   const db = await getDb();
-  return db.getUserByEmail(email);
+  const user = await db.getUserByEmail(email);
+  if (user) return user;
+  if (useSupabase) {
+    const fallback = await import("./store");
+    return fallback.getUserByEmail(email);
+  }
+  return null;
 }
 
 // ─── Orders ──────────────────────────────────────────────────────────────────
