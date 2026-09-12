@@ -90,6 +90,14 @@ export default function AccountPage() {
     }
   }
 
+  if (authState.loading) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center">
+        <Loader2 className="w-8 h-8 text-blue-600 animate-spin" />
+      </div>
+    );
+  }
+
   if (!isLoggedIn) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
