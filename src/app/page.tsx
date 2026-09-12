@@ -4,6 +4,7 @@ import ProductGrid from '@/components/product/ProductGrid';
 import FlashSale from '@/components/product/FlashSale';
 import BestSellers from '@/components/product/BestSellers';
 import DiscountedProducts from '@/components/product/DiscountedProducts';
+import NewArrivals from '@/components/product/NewArrivals';
 import { getAllCategories, getFeaturedProducts, getNewProducts, getSaleProducts, getAllProducts } from '@/lib/db';
 import { ArrowRight } from 'lucide-react';
 
@@ -44,20 +45,7 @@ export default async function Home() {
 
         <BestSellers products={allProducts} />
 
-        {newArrivals.length > 0 && (
-          <section className="mb-16">
-            <div className="flex items-center justify-between mb-8">
-              <h2 className="text-2xl font-bold text-gray-900">New Arrivals</h2>
-              <Link
-                href="/products?sortBy=newest"
-                className="flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
-              >
-                View All <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <ProductGrid products={newArrivals} />
-          </section>
-        )}
+        <NewArrivals products={newArrivals} />
 
         <DiscountedProducts products={allProducts} />
 
