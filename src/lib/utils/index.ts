@@ -23,6 +23,9 @@ export function truncate(text: string, length: number): string {
 }
 
 export function getImageUrl(imageId: string): string {
+  if (imageId.startsWith("http://") || imageId.startsWith("https://")) {
+    return imageId;
+  }
   return `https://picsum.photos/seed/${imageId}/600/600`;
 }
 

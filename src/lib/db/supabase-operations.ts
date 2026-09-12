@@ -321,7 +321,7 @@ export async function getCartItems(userId: string): Promise<CartItem[]> {
     const { data, error } = await supabase
       .from("cart")
       .select("*")
-      .eq("userId", userId);
+      .eq("userid", userId);
 
     if (error) throw error;
 
@@ -337,8 +337,8 @@ export async function addToCart(item: CartItem): Promise<CartItem> {
     const { data: existing } = await supabase
       .from("cart")
       .select("*")
-      .eq("userId", item.userId)
-      .eq("productId", item.productId)
+      .eq("userid", item.userId)
+      .eq("productid", item.productId)
       .single();
 
     if (existing) {
@@ -379,8 +379,8 @@ export async function updateCartItem(
     const { data: existing, error: findError } = await supabase
       .from("cart")
       .select("*")
-      .eq("userId", userId)
-      .eq("productId", productId)
+      .eq("userid", userId)
+      .eq("productid", productId)
       .single();
 
     if (findError || !existing) {
@@ -413,8 +413,8 @@ export async function removeFromCart(
     const { error } = await supabase
       .from("cart")
       .delete()
-      .eq("userId", userId)
-      .eq("productId", productId);
+      .eq("userid", userId)
+      .eq("productid", productId);
 
     if (error) throw error;
   } catch (error) {
@@ -428,7 +428,7 @@ export async function clearCart(userId: string): Promise<void> {
     const { error } = await supabase
       .from("cart")
       .delete()
-      .eq("userId", userId);
+      .eq("userid", userId);
 
     if (error) throw error;
   } catch (error) {
@@ -446,7 +446,7 @@ export async function getWishlistItems(
     const { data, error } = await supabase
       .from("wishlist")
       .select("*")
-      .eq("userId", userId);
+      .eq("userid", userId);
 
     if (error) throw error;
 
@@ -464,8 +464,8 @@ export async function addToWishlist(
     const { data: existing } = await supabase
       .from("wishlist")
       .select("*")
-      .eq("userId", item.userId)
-      .eq("productId", item.productId)
+      .eq("userid", item.userId)
+      .eq("productid", item.productId)
       .single();
 
     if (existing) {
@@ -495,8 +495,8 @@ export async function removeFromWishlist(
     const { error } = await supabase
       .from("wishlist")
       .delete()
-      .eq("userId", userId)
-      .eq("productId", productId);
+      .eq("userid", userId)
+      .eq("productid", productId);
 
     if (error) throw error;
   } catch (error) {
