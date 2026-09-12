@@ -12,6 +12,31 @@ import type {
 
 // ─── Products ────────────────────────────────────────────────────────────────
 
+function mapProduct(row: any): Product {
+  return {
+    id: row.id,
+    name: row.name,
+    slug: row.slug,
+    description: row.description,
+    price: Number(row.price),
+    originalPrice: Number(row.originalprice),
+    images: row.images,
+    categoryId: row.categoryid,
+    category: row.category,
+    stock: row.stock,
+    rating: Number(row.rating),
+    reviewCount: row.reviewcount,
+    features: row.features,
+    specifications: row.specifications,
+    tags: row.tags,
+    isFeatured: row.isfeatured,
+    isNew: row.isnew,
+    isOnSale: row.isonsale,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
 export async function getAllProducts(
   filters?: SearchFilters
 ): Promise<PaginatedResponse<Product>> {
@@ -66,7 +91,7 @@ export async function getAllProducts(
     if (error) throw error;
 
     return {
-      data: (data as Product[]) || [],
+      data: (data as any[]).map(mapProduct),
       total: count || 0,
       page,
       limit,
@@ -88,7 +113,7 @@ export async function getProductById(id: string): Promise<Product | null> {
 
     if (error) throw error;
 
-    return data as Product;
+    return mapProduct(data);
   } catch (error) {
     console.error("Error fetching product by id:", error);
     return null;
@@ -105,7 +130,7 @@ export async function getProductBySlug(slug: string): Promise<Product | null> {
 
     if (error) throw error;
 
-    return data as Product;
+    return mapProduct(data);
   } catch (error) {
     console.error("Error fetching product by slug:", error);
     return null;
@@ -125,7 +150,7 @@ export async function getProductsByCategory(
 
     if (error) throw error;
 
-    return (data as Product[]) || [];
+    return (data as any[]).map(mapProduct);
   } catch (error) {
     console.error("Error fetching products by category:", error);
     return [];
@@ -141,7 +166,7 @@ export async function getFeaturedProducts(): Promise<Product[]> {
 
     if (error) throw error;
 
-    return (data as Product[]) || [];
+    return (data as any[]).map(mapProduct);
   } catch (error) {
     console.error("Error fetching featured products:", error);
     return [];
@@ -157,7 +182,7 @@ export async function getNewProducts(): Promise<Product[]> {
 
     if (error) throw error;
 
-    return (data as Product[]) || [];
+    return (data as any[]).map(mapProduct);
   } catch (error) {
     console.error("Error fetching new products:", error);
     return [];
@@ -173,7 +198,7 @@ export async function getSaleProducts(): Promise<Product[]> {
 
     if (error) throw error;
 
-    return (data as Product[]) || [];
+    return (data as any[]).map(mapProduct);
   } catch (error) {
     console.error("Error fetching sale products:", error);
     return [];
@@ -190,7 +215,7 @@ export async function searchProducts(query: string): Promise<Product[]> {
 
     if (error) throw error;
 
-    return (data as Product[]) || [];
+    return (data as any[]).map(mapProduct);
   } catch (error) {
     console.error("Error searching products:", error);
     return [];
@@ -199,15 +224,34 @@ export async function searchProducts(query: string): Promise<Product[]> {
 
 export async function createProduct(product: Product): Promise<Product> {
   try {
-    const { data, error } = await supabase
-      .from("products")
-      .insert(product as any)
+    const { data, error } = await (supabase
+      .from("products") as any)
+      .insert({
+        id: product.id,
+        name: product.name,
+        slug: product.slug,
+        description: product.description,
+        price: product.price,
+        originalprice: product.originalPrice,
+        images: product.images,
+        categoryid: product.categoryId,
+        category: product.category,
+        stock: product.stock,
+        rating: product.rating,
+        reviewcount: product.reviewCount,
+        features: product.features,
+        specifications: product.specifications,
+        tags: product.tags,
+        isfeatured: product.isFeatured,
+        isnew: product.isNew,
+        isonsale: product.isOnSale,
+      })
       .select()
       .single();
 
     if (error) throw error;
 
-    return data as Product;
+    return mapProduct(data);
   } catch (error) {
     console.error("Error creating product:", error);
     throw error;
@@ -219,16 +263,35 @@ export async function updateProduct(
   updates: Partial<Product>
 ): Promise<Product> {
   try {
+    const dbUpdates: Record<string, any> = {};
+    if (updates.name !== undefined) dbUpdates.name = updates.name;
+    if (updates.slug !== undefined) dbUpdates.slug = updates.slug;
+    if (updates.description !== undefined) dbUpdates.description = updates.description;
+    if (updates.price !== undefined) dbUpdates.price = updates.price;
+    if (updates.originalPrice !== undefined) dbUpdates.originalprice = updates.originalPrice;
+    if (updates.images !== undefined) dbUpdates.images = updates.images;
+    if (updates.categoryId !== undefined) dbUpdates.categoryid = updates.categoryId;
+    if (updates.category !== undefined) dbUpdates.category = updates.category;
+    if (updates.stock !== undefined) dbUpdates.stock = updates.stock;
+    if (updates.rating !== undefined) dbUpdates.rating = updates.rating;
+    if (updates.reviewCount !== undefined) dbUpdates.reviewcount = updates.reviewCount;
+    if (updates.features !== undefined) dbUpdates.features = updates.features;
+    if (updates.specifications !== undefined) dbUpdates.specifications = updates.specifications;
+    if (updates.tags !== undefined) dbUpdates.tags = updates.tags;
+    if (updates.isFeatured !== undefined) dbUpdates.isfeatured = updates.isFeatured;
+    if (updates.isNew !== undefined) dbUpdates.isnew = updates.isNew;
+    if (updates.isOnSale !== undefined) dbUpdates.isonsale = updates.isOnSale;
+
     const { data, error } = await (supabase
       .from("products") as any)
-      .update({ ...updates, updated_at: new Date().toISOString() })
+      .update(dbUpdates)
       .eq("id", id)
       .select()
       .single();
 
     if (error) throw error;
 
-    return data as Product;
+    return mapProduct(data);
   } catch (error) {
     console.error("Error updating product:", error);
     throw error;
@@ -325,7 +388,14 @@ export async function getCartItems(userId: string): Promise<CartItem[]> {
 
     if (error) throw error;
 
-    return (data as CartItem[]) || [];
+    return ((data || []) as any[]).map((row) => ({
+      id: row.id,
+      productId: row.productid,
+      product: row.product,
+      quantity: row.quantity,
+      userId: row.userid,
+      addedAt: row.added_at,
+    })) as CartItem[];
   } catch (error) {
     console.error("Error fetching cart items:", error);
     return [];
@@ -342,7 +412,7 @@ export async function addToCart(item: CartItem): Promise<CartItem> {
       .single();
 
     if (existing) {
-      const existingItem = existing as CartItem;
+      const existingItem = existing as any;
       const { data, error } = await (supabase
         .from("cart") as any)
         .update({ quantity: existingItem.quantity + item.quantity })
@@ -352,18 +422,39 @@ export async function addToCart(item: CartItem): Promise<CartItem> {
 
       if (error) throw error;
 
-      return data as CartItem;
+      return {
+        id: data.id,
+        productId: data.productid,
+        product: data.product,
+        quantity: data.quantity,
+        userId: data.userid,
+        addedAt: data.added_at,
+      } as CartItem;
     }
 
-    const { data, error } = await supabase
-      .from("cart")
-      .insert(item as any)
+    const { data, error } = await (supabase
+      .from("cart") as any)
+      .insert({
+        id: item.id,
+        productid: item.productId,
+        product: item.product,
+        quantity: item.quantity,
+        userid: item.userId,
+        added_at: item.addedAt,
+      })
       .select()
       .single();
 
     if (error) throw error;
 
-    return data as CartItem;
+    return {
+      id: data.id,
+      productId: data.productid,
+      product: data.product,
+      quantity: data.quantity,
+      userId: data.userid,
+      addedAt: data.added_at,
+    } as CartItem;
   } catch (error) {
     console.error("Error adding to cart:", error);
     throw error;
@@ -387,7 +478,7 @@ export async function updateCartItem(
       throw new Error("Cart item not found");
     }
 
-    const existingItem = existing as CartItem;
+    const existingItem = existing as any;
 
     const { data, error } = await (supabase
       .from("cart") as any)
@@ -398,7 +489,14 @@ export async function updateCartItem(
 
     if (error) throw error;
 
-    return data as CartItem;
+    return {
+      id: data.id,
+      productId: data.productid,
+      product: data.product,
+      quantity: data.quantity,
+      userId: data.userid,
+      addedAt: data.added_at,
+    } as CartItem;
   } catch (error) {
     console.error("Error updating cart item:", error);
     throw error;
@@ -450,7 +548,13 @@ export async function getWishlistItems(
 
     if (error) throw error;
 
-    return (data as WishlistItem[]) || [];
+    return ((data || []) as any[]).map((row) => ({
+      id: row.id,
+      productId: row.productid,
+      product: row.product,
+      userId: row.userid,
+      addedAt: row.added_at,
+    })) as WishlistItem[];
   } catch (error) {
     console.error("Error fetching wishlist items:", error);
     return [];
@@ -469,18 +573,37 @@ export async function addToWishlist(
       .single();
 
     if (existing) {
-      return existing as WishlistItem;
+      const row = existing as any;
+      return {
+        id: row.id,
+        productId: row.productid,
+        product: row.product,
+        userId: row.userid,
+        addedAt: row.added_at,
+      } as WishlistItem;
     }
 
-    const { data, error } = await supabase
-      .from("wishlist")
-      .insert(item as any)
+    const { data, error } = await (supabase
+      .from("wishlist") as any)
+      .insert({
+        id: item.id,
+        productid: item.productId,
+        product: item.product,
+        userid: item.userId,
+        added_at: item.addedAt,
+      })
       .select()
       .single();
 
     if (error) throw error;
 
-    return data as WishlistItem;
+    return {
+      id: data.id,
+      productId: data.productid,
+      product: data.product,
+      userId: data.userid,
+      addedAt: data.added_at,
+    } as WishlistItem;
   } catch (error) {
     console.error("Error adding to wishlist:", error);
     throw error;
@@ -509,15 +632,21 @@ export async function removeFromWishlist(
 
 export async function getUserById(id: string): Promise<User | null> {
   try {
-    const { data, error } = await supabase
-      .from("users")
+    const { data, error } = await (supabase
+      .from("users") as any)
       .select("*")
       .eq("id", id)
       .single();
 
     if (error) throw error;
 
-    return data as User;
+    return {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      avatar: data.avatar,
+      createdAt: data.created_at,
+    } as User;
   } catch (error) {
     console.error("Error fetching user by id:", error);
     return null;
@@ -526,15 +655,22 @@ export async function getUserById(id: string): Promise<User | null> {
 
 export async function getUserByEmail(email: string): Promise<UserWithPassword | null> {
   try {
-    const { data, error } = await supabase
-      .from("users")
+    const { data, error } = await (supabase
+      .from("users") as any)
       .select("*")
       .eq("email", email.toLowerCase())
       .single();
 
     if (error) throw error;
 
-    return data as UserWithPassword;
+    return {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      avatar: data.avatar,
+      createdAt: data.created_at,
+      password: data.password,
+    } as UserWithPassword;
   } catch (error) {
     console.error("Error fetching user by email:", error);
     return null;
@@ -543,15 +679,28 @@ export async function getUserByEmail(email: string): Promise<UserWithPassword | 
 
 export async function createUser(user: UserWithPassword): Promise<User> {
   try {
-    const { data, error } = await supabase
-      .from("users")
-      .insert(user as any)
+    const { data, error } = await (supabase
+      .from("users") as any)
+      .insert({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        avatar: user.avatar,
+        created_at: user.createdAt,
+        password: user.password,
+      })
       .select()
       .single();
 
     if (error) throw error;
 
-    return data as User;
+    return {
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      avatar: data.avatar,
+      createdAt: data.created_at,
+    } as User;
   } catch (error) {
     console.error("Error creating user:", error);
     throw error;
