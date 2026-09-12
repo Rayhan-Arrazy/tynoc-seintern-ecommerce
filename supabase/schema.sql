@@ -61,6 +61,7 @@ CREATE TABLE users (
   id         uuid PRIMARY KEY,
   name       text        NOT NULL,
   email      text        NOT NULL UNIQUE,
+  password   text,
   avatar     text,
   created_at timestamptz NOT NULL DEFAULT now()
 );

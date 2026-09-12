@@ -580,10 +580,11 @@ VALUES (
 -- ============================================================
 -- Demo User
 -- ============================================================
-INSERT INTO users (id, name, email, avatar, created_at)
+INSERT INTO users (id, name, email, password, avatar, created_at)
 VALUES
-  ('660e8400-e29b-41d4-a716-446655440099', 'Demo User', 'demo@example.com', 'https://picsum.photos/seed/avatar/100/100', '2024-01-01T00:00:00Z')
+  ('660e8400-e29b-41d4-a716-446655440099', 'Demo User', 'demo@example.com', 'password123', 'https://picsum.photos/seed/avatar/100/100', '2024-01-01T00:00:00Z')
 ON CONFLICT (id) DO UPDATE SET
   name       = EXCLUDED.name,
   email      = EXCLUDED.email,
+  password   = EXCLUDED.password,
   avatar     = EXCLUDED.avatar;
