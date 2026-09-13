@@ -233,7 +233,7 @@ export const seedProducts: Product[] = [
     updatedAt: "2024-11-01T11:30:00.000Z",
   },
   {
-    id: "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8091",
+    id: "e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8090",
     name: "Portable Bluetooth Speaker",
     slug: "portable-bluetooth-speaker",
     description:

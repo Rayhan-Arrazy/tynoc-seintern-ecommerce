@@ -1,8 +1,9 @@
 -- ============================================================
--- Supabase Schema for E-Commerce Store
+-- Tynoc E-Commerce — Complete Supabase Schema
 -- ============================================================
+-- Idempotent: safe to run multiple times (CREATE IF NOT EXISTS).
 
--- Helper function: auto-update updated_at on row modification
+-- ── Helper ─────────────────────────────────────────────────────
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -11,8 +12,8 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Categories
-CREATE TABLE categories (
+-- ── Categories ─────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS categories (
   id           uuid PRIMARY KEY,
   name         text        NOT NULL,
   slug         text        NOT NULL UNIQUE,
@@ -22,8 +23,8 @@ CREATE TABLE categories (
   created_at   timestamptz NOT NULL DEFAULT now()
 );
 
--- Products
-CREATE TABLE products (
+-- ── Products ───────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS products (
   id             uuid PRIMARY KEY,
   name           text        NOT NULL,
   slug           text        NOT NULL UNIQUE,
@@ -46,18 +47,22 @@ CREATE TABLE products (
   updated_at     timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE TRIGGER set_products_updated_at
-  BEFORE UPDATE ON products
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'set_products_updated_at') THEN
+    CREATE TRIGGER set_products_updated_at
+      BEFORE UPDATE ON products
+      FOR EACH ROW
+      EXECUTE FUNCTION update_updated_at_column();
+  END IF;
+END $$;
 
-CREATE INDEX idx_products_categoryid ON products(categoryid);
-CREATE INDEX idx_products_isfeatured ON products(isfeatured);
-CREATE INDEX idx_products_isnew      ON products(isnew);
-CREATE INDEX idx_products_onsale     ON products(isonsale);
+CREATE INDEX IF NOT EXISTS idx_products_categoryid ON products(categoryid);
+CREATE INDEX IF NOT EXISTS idx_products_isfeatured ON products(isfeatured);
+CREATE INDEX IF NOT EXISTS idx_products_isnew      ON products(isnew);
+CREATE INDEX IF NOT EXISTS idx_products_onsale     ON products(isonsale);
 
--- Users
-CREATE TABLE users (
+-- ── Users ──────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS users (
   id         uuid PRIMARY KEY,
   name       text        NOT NULL,
   email      text        NOT NULL UNIQUE,
@@ -66,8 +71,8 @@ CREATE TABLE users (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
--- Cart
-CREATE TABLE cart (
+-- ── Cart ───────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS cart (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   productid  text        NOT NULL,
   product    jsonb       NOT NULL DEFAULT '{}'::jsonb,
@@ -76,11 +81,11 @@ CREATE TABLE cart (
   added_at   timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_cart_userid ON cart(userid);
-CREATE UNIQUE INDEX idx_cart_user_product ON cart(userid, productid);
+CREATE INDEX IF NOT EXISTS idx_cart_userid ON cart(userid);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_cart_user_product ON cart(userid, productid);
 
--- Wishlist
-CREATE TABLE wishlist (
+-- ── Wishlist ───────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS wishlist (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   productid  text        NOT NULL,
   product    jsonb       NOT NULL DEFAULT '{}'::jsonb,
@@ -88,10 +93,10 @@ CREATE TABLE wishlist (
   added_at   timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE INDEX idx_wishlist_userid ON wishlist(userid);
-CREATE UNIQUE INDEX idx_wishlist_user_product ON wishlist(userid, productid);
+CREATE INDEX IF NOT EXISTS idx_wishlist_userid ON wishlist(userid);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_wishlist_user_product ON wishlist(userid, productid);
 
--- Orders
+-- ── Orders ─────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS orders (
   id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   userid           text        NOT NULL,
@@ -109,12 +114,16 @@ CREATE TABLE IF NOT EXISTS orders (
 
 CREATE INDEX IF NOT EXISTS idx_orders_userid ON orders(userid);
 
-CREATE TRIGGER set_orders_updated_at
-  BEFORE UPDATE ON orders
-  FOR EACH ROW
-  EXECUTE FUNCTION update_updated_at_column();
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_trigger WHERE tgname = 'set_orders_updated_at') THEN
+    CREATE TRIGGER set_orders_updated_at
+      BEFORE UPDATE ON orders
+      FOR EACH ROW
+      EXECUTE FUNCTION update_updated_at_column();
+  END IF;
+END $$;
 
--- Notifications
+-- ── Notifications ──────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS notifications (
   id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   userid     text        NOT NULL,
@@ -127,19 +136,35 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 CREATE INDEX IF NOT EXISTS idx_notifications_userid ON notifications(userid);
 
--- Row Level Security
-ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
-ALTER TABLE products  ENABLE ROW LEVEL SECURITY;
-ALTER TABLE users     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cart            ENABLE ROW LEVEL SECURITY;
-ALTER TABLE wishlist        ENABLE ROW LEVEL SECURITY;
-ALTER TABLE orders          ENABLE ROW LEVEL SECURITY;
-ALTER TABLE notifications   ENABLE ROW LEVEL SECURITY;
+-- ── Row Level Security ─────────────────────────────────────────
+ALTER TABLE categories    ENABLE ROW LEVEL SECURITY;
+ALTER TABLE products      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE users         ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cart          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wishlist      ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow all on categories" ON categories FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all on products"   ON products  FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all on users"      ON users     FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all on cart"       ON cart      FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all on wishlist"       ON wishlist      FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all on orders"          ON orders        FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all on notifications"   ON notifications FOR ALL USING (true) WITH CHECK (true);
+DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow all on categories' AND tablename = 'categories') THEN
+    CREATE POLICY "Allow all on categories" ON categories FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow all on products' AND tablename = 'products') THEN
+    CREATE POLICY "Allow all on products" ON products FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow all on users' AND tablename = 'users') THEN
+    CREATE POLICY "Allow all on users" ON users FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow all on cart' AND tablename = 'cart') THEN
+    CREATE POLICY "Allow all on cart" ON cart FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow all on wishlist' AND tablename = 'wishlist') THEN
+    CREATE POLICY "Allow all on wishlist" ON wishlist FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow all on orders' AND tablename = 'orders') THEN
+    CREATE POLICY "Allow all on orders" ON orders FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM pg_policies WHERE policyname = 'Allow all on notifications' AND tablename = 'notifications') THEN
+    CREATE POLICY "Allow all on notifications" ON notifications FOR ALL USING (true) WITH CHECK (true);
+  END IF;
+END $$;
