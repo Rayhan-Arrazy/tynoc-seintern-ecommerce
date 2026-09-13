@@ -1,8 +1,8 @@
 import { type NextRequest } from "next/server";
-import { v4 as uuidv4 } from "uuid";
 import { createNotification } from "@/lib/db/notification-operations";
 import { supabase } from "@/lib/db/supabase";
-import type { ApiResponse, Order, OrderStatus, OrderItem, CartItem } from "@/types";
+import { randomUUID } from "crypto";
+import type { ApiResponse, Order, OrderItem, CartItem } from "@/types";
 
 function mapOrder(row: any): Order {
   return {
@@ -96,7 +96,7 @@ export async function POST(
     }
 
     const orderItems: OrderItem[] = items.map((item: CartItem) => ({
-      id: uuidv4(),
+      id: randomUUID(),
       productId: item.productId,
       product: item.product,
       quantity: item.quantity,
@@ -112,7 +112,7 @@ export async function POST(
     const total = Math.round((subtotal + shipping + tax) * 100) / 100;
 
     const order: Order = {
-      id: uuidv4(),
+      id: randomUUID(),
       userId,
       items: orderItems,
       subtotal,
@@ -146,18 +146,22 @@ export async function POST(
       .single();
 
     if (insertError) {
-      console.error("Supabase order insert error:", insertError);
-      return Response.json({ success: false, error: "Failed to create order" }, { status: 500 });
+      console.error("Supabase order insert error:", JSON.stringify(insertError));
+      return Response.json({ success: false, error: `Failed to create order: ${insertError.message || insertError.code || "unknown"}`, details: insertError }, { status: 500 });
     }
 
     const created = mapOrder(inserted);
 
-    await createNotification({
-      userId,
-      type: 'order',
-      title: 'Order Placed',
-      message: `Your order #${created.id.slice(0, 8).toUpperCase()} has been placed. Processing payment...`,
-    });
+    try {
+      await createNotification({
+        userId,
+        type: 'order',
+        title: 'Order Placed',
+        message: `Your order #${created.id.slice(0, 8).toUpperCase()} has been placed. Processing payment...`,
+      });
+    } catch (notifErr) {
+      console.error("Notification after order create failed:", notifErr);
+    }
 
     const response: ApiResponse<Order> = {
       success: true,
@@ -167,6 +171,7 @@ export async function POST(
 
     return Response.json(response, { status: 201 });
   } catch (error) {
+    console.error("Order creation error:", error);
     const response: ApiResponse<null> = {
       success: false,
       error: error instanceof Error ? error.message : "Failed to create order",
