@@ -1,8 +1,35 @@
 import { type NextRequest } from "next/server";
-import { getOrderById } from "@/lib/db";
-import { updateOrderStatus } from "@/lib/db/order-operations";
+import { supabase } from "@/lib/db/supabase";
 import { createNotification } from "@/lib/db/notification-operations";
 import type { ApiResponse, Order, OrderStatus } from "@/types";
+
+function mapOrder(row: any): Order {
+  return {
+    id: row.id,
+    userId: row.userid,
+    items: row.items,
+    subtotal: Number(row.subtotal),
+    shipping: Number(row.shipping),
+    tax: Number(row.tax),
+    total: Number(row.total),
+    status: row.status,
+    shippingAddress: row.shipping_address,
+    paymentMethod: row.payment_method,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+async function getOrder(id: string): Promise<Order | null> {
+  const { data, error } = await (supabase as any)
+    .from("orders")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error || !data) return null;
+  return mapOrder(data);
+}
 
 export async function GET(
   request: NextRequest,
@@ -10,28 +37,18 @@ export async function GET(
 ): Promise<Response> {
   try {
     const { id } = await params;
-    const order = await getOrderById(id);
+    const order = await getOrder(id);
 
     if (!order) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: "Order not found",
-      };
-      return Response.json(response, { status: 404 });
+      return Response.json({ success: false, error: "Order not found" }, { status: 404 });
     }
 
-    const response: ApiResponse<Order> = {
-      success: true,
-      data: order,
-    };
-
-    return Response.json(response, { status: 200 });
+    return Response.json({ success: true, data: order }, { status: 200 });
   } catch (error) {
-    const response: ApiResponse<null> = {
+    return Response.json({
       success: false,
       error: error instanceof Error ? error.message : "Failed to fetch order",
-    };
-    return Response.json(response, { status: 500 });
+    }, { status: 500 });
   }
 }
 
@@ -45,32 +62,32 @@ export async function PATCH(
     const { status } = body;
 
     if (!status) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: "Status is required",
-      };
-      return Response.json(response, { status: 400 });
+      return Response.json({ success: false, error: "Status is required" }, { status: 400 });
     }
 
     const validStatuses: OrderStatus[] = ["pending", "confirmed", "shipped", "delivered", "cancelled"];
     if (!validStatuses.includes(status)) {
-      const response: ApiResponse<null> = {
+      return Response.json({
         success: false,
         error: `Invalid status. Must be one of: ${validStatuses.join(", ")}`,
-      };
-      return Response.json(response, { status: 400 });
+      }, { status: 400 });
     }
 
-    const existingOrder = await getOrderById(id);
+    const existingOrder = await getOrder(id);
     if (!existingOrder) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: "Order not found",
-      };
-      return Response.json(response, { status: 404 });
+      return Response.json({ success: false, error: "Order not found" }, { status: 404 });
     }
 
-    const updatedOrder = await updateOrderStatus(id, status);
+    const now = new Date().toISOString();
+    const { error: updateError } = await (supabase as any)
+      .from("orders")
+      .update({ status, updated_at: now })
+      .eq("id", id);
+
+    if (updateError) {
+      console.error("Supabase order update error:", updateError);
+      return Response.json({ success: false, error: "Failed to update order" }, { status: 500 });
+    }
 
     if (status === "confirmed") {
       await createNotification({
@@ -95,18 +112,17 @@ export async function PATCH(
       });
     }
 
-    const response: ApiResponse<Order> = {
-      success: true,
-      data: updatedOrder!,
-      message: `Order status updated to ${status}`,
-    };
+    const updatedOrder: Order = { ...existingOrder, status, updatedAt: now };
 
-    return Response.json(response, { status: 200 });
+    return Response.json({
+      success: true,
+      data: updatedOrder,
+      message: `Order status updated to ${status}`,
+    }, { status: 200 });
   } catch (error) {
-    const response: ApiResponse<null> = {
+    return Response.json({
       success: false,
       error: error instanceof Error ? error.message : "Failed to update order status",
-    };
-    return Response.json(response, { status: 500 });
+    }, { status: 500 });
   }
 }

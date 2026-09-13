@@ -1,11 +1,8 @@
 import { type NextRequest } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-import {
-  createOrder,
-} from "@/lib/db";
 import { createNotification } from "@/lib/db/notification-operations";
 import { supabase } from "@/lib/db/supabase";
-import type { ApiResponse, Order, OrderItem, CartItem } from "@/types";
+import type { ApiResponse, Order, OrderStatus, OrderItem, CartItem } from "@/types";
 
 function mapOrder(row: any): Order {
   return {
@@ -35,8 +32,8 @@ export async function GET(
       return Response.json({ success: true, data: [] }, { status: 200 });
     }
 
-    const { data, error } = await supabase
-      .from("orders" as any)
+    const { data, error } = await (supabase as any)
+      .from("orders")
       .select("*")
       .eq("userid", userId)
       .order("created_at", { ascending: false });
@@ -129,7 +126,31 @@ export async function POST(
       updatedAt: new Date().toISOString(),
     };
 
-    const created = await createOrder(order);
+    const { data: inserted, error: insertError } = await (supabase as any)
+      .from("orders")
+      .insert({
+        id: order.id,
+        userid: order.userId,
+        items: order.items,
+        subtotal: order.subtotal,
+        shipping: order.shipping,
+        tax: order.tax,
+        total: order.total,
+        status: order.status,
+        shipping_address: order.shippingAddress,
+        payment_method: order.paymentMethod,
+        created_at: order.createdAt,
+        updated_at: order.updatedAt,
+      })
+      .select()
+      .single();
+
+    if (insertError) {
+      console.error("Supabase order insert error:", insertError);
+      return Response.json({ success: false, error: "Failed to create order" }, { status: 500 });
+    }
+
+    const created = mapOrder(inserted);
 
     await createNotification({
       userId,
