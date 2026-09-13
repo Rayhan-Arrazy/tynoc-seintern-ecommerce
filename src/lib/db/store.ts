@@ -312,3 +312,8 @@ export async function createUser(user: UserWithPassword): Promise<User> {
   const { password: _, ...userWithoutPassword } = user;
   return userWithoutPassword;
 }
+
+export async function getUsers(): Promise<User[]> {
+  const items = ensureUsers();
+  return items.map(({ password: _, ...user }) => user);
+}

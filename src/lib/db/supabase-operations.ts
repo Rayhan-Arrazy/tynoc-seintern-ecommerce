@@ -706,3 +706,24 @@ export async function createUser(user: UserWithPassword): Promise<User> {
     throw error;
   }
 }
+
+export async function getUsers(): Promise<User[]> {
+  try {
+    const { data, error } = await supabase
+      .from("users")
+      .select("id, name, email, avatar, created_at");
+
+    if (error) throw error;
+
+    return (data || []).map((row: any) => ({
+      id: row.id,
+      name: row.name,
+      email: row.email,
+      avatar: row.avatar,
+      createdAt: row.created_at,
+    })) as User[];
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    return [];
+  }
+}

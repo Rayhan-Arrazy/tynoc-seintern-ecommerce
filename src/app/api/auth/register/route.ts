@@ -1,5 +1,6 @@
 import { type NextRequest } from "next/server";
 import { v4 as uuidv4 } from "uuid";
+import bcrypt from "bcryptjs";
 import { createUser } from "@/lib/db";
 import type { ApiResponse, User, UserWithPassword } from "@/types";
 
@@ -36,13 +37,15 @@ export async function POST(
       return Response.json(response, { status: 400 });
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const user: UserWithPassword = {
       id: uuidv4(),
       name: name.trim(),
       email: email.toLowerCase().trim(),
       avatar: `https://picsum.photos/seed/${uuidv4().slice(0, 8)}/100/100`,
       createdAt: new Date().toISOString(),
-      password,
+      password: hashedPassword,
     };
 
     const created = await createUser(user);

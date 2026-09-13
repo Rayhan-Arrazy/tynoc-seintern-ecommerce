@@ -221,11 +221,21 @@ export async function getUserByEmail(email: string): Promise<UserWithPassword | 
   return null;
 }
 
+export async function getUsers(): Promise<User[]> {
+  const db = await getDb();
+  return db.getUsers();
+}
+
 // ─── Orders ──────────────────────────────────────────────────────────────────
 
 export async function getOrders(userId: string): Promise<Order[]> {
   const { getOrders } = await import("./order-operations");
   return getOrders(userId);
+}
+
+export async function getAllOrders(): Promise<Order[]> {
+  const { getAllOrders } = await import("./order-operations");
+  return getAllOrders();
 }
 
 export async function getOrderById(id: string): Promise<Order | null> {

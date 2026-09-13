@@ -1,4 +1,5 @@
 import { type NextRequest } from "next/server";
+import bcrypt from "bcryptjs";
 import { getUserByEmail } from "@/lib/db";
 import type { ApiResponse, User } from "@/types";
 
@@ -35,12 +36,15 @@ export async function POST(
       return Response.json(response, { status: 401 });
     }
 
-    if (userWithPassword.password !== password) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: "Invalid email or password",
-      };
-      return Response.json(response, { status: 401 });
+    const isValid = await bcrypt.compare(password, userWithPassword.password);
+    if (!isValid) {
+      if (userWithPassword.password !== password) {
+        const response: ApiResponse<null> = {
+          success: false,
+          error: "Invalid email or password",
+        };
+        return Response.json(response, { status: 401 });
+      }
     }
 
     const { password: _, ...user } = userWithPassword;

@@ -91,15 +91,55 @@ CREATE TABLE wishlist (
 CREATE INDEX idx_wishlist_userid ON wishlist(userid);
 CREATE UNIQUE INDEX idx_wishlist_user_product ON wishlist(userid, productid);
 
+-- Orders
+CREATE TABLE IF NOT EXISTS orders (
+  id               uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  userid           text        NOT NULL,
+  items            jsonb       NOT NULL DEFAULT '[]'::jsonb,
+  subtotal         numeric     NOT NULL DEFAULT 0,
+  shipping         numeric     NOT NULL DEFAULT 0,
+  tax              numeric     NOT NULL DEFAULT 0,
+  total            numeric     NOT NULL DEFAULT 0,
+  status           text        NOT NULL DEFAULT 'pending',
+  shipping_address jsonb,
+  payment_method   jsonb,
+  created_at       timestamptz NOT NULL DEFAULT now(),
+  updated_at       timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_orders_userid ON orders(userid);
+
+CREATE TRIGGER set_orders_updated_at
+  BEFORE UPDATE ON orders
+  FOR EACH ROW
+  EXECUTE FUNCTION update_updated_at_column();
+
+-- Notifications
+CREATE TABLE IF NOT EXISTS notifications (
+  id         uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  userid     text        NOT NULL,
+  title      text        NOT NULL,
+  message    text,
+  type       text        NOT NULL DEFAULT 'system',
+  is_read    boolean     NOT NULL DEFAULT false,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE INDEX IF NOT EXISTS idx_notifications_userid ON notifications(userid);
+
 -- Row Level Security
 ALTER TABLE categories ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products  ENABLE ROW LEVEL SECURITY;
 ALTER TABLE users     ENABLE ROW LEVEL SECURITY;
-ALTER TABLE cart      ENABLE ROW LEVEL SECURITY;
-ALTER TABLE wishlist  ENABLE ROW LEVEL SECURITY;
+ALTER TABLE cart            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE wishlist        ENABLE ROW LEVEL SECURITY;
+ALTER TABLE orders          ENABLE ROW LEVEL SECURITY;
+ALTER TABLE notifications   ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Allow all on categories" ON categories FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all on products"   ON products  FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all on users"      ON users     FOR ALL USING (true) WITH CHECK (true);
 CREATE POLICY "Allow all on cart"       ON cart      FOR ALL USING (true) WITH CHECK (true);
-CREATE POLICY "Allow all on wishlist"   ON wishlist  FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on wishlist"       ON wishlist      FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on orders"          ON orders        FOR ALL USING (true) WITH CHECK (true);
+CREATE POLICY "Allow all on notifications"   ON notifications FOR ALL USING (true) WITH CHECK (true);

@@ -1137,6 +1137,6 @@ export const seedUsers: UserWithPassword[] = [
     email: "demo@example.com",
     avatar: "https://picsum.photos/seed/avatar/100/100",
     createdAt: "2024-01-01T00:00:00.000Z",
-    password: "password123",
+    password: "$2b$10$rT3JfSm0bnOLl1U5gUYujucmM0HV3AjDHGZUSlRSBRC04zCZRKSkK",
   },
 ];

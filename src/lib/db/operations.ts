@@ -662,3 +662,15 @@ export async function getUserByEmail(email: string): Promise<UserWithPassword | 
     throw new Error("Failed to fetch user");
   }
 }
+
+export async function getUsers(): Promise<User[]> {
+  try {
+    const result = await docClient.send(
+      new ScanCommand({ TableName: USERS_TABLE })
+    );
+    return (result.Items || []).map(({ password: _, ...user }) => user as User);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    throw new Error("Failed to fetch users");
+  }
+}
