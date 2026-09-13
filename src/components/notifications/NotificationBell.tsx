@@ -30,6 +30,8 @@ export default function NotificationBell() {
   useEffect(() => {
     if (authState.user) {
       fetchNotifications();
+      const interval = setInterval(fetchNotifications, 10000);
+      return () => clearInterval(interval);
     }
   }, [authState.user]);
 

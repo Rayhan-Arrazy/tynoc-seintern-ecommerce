@@ -34,13 +34,15 @@ export default function OrderDetailPage() {
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentComplete, setPaymentComplete] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const startedRef = useRef(false);
 
   useEffect(() => {
     fetchOrder();
   }, [params.id]);
 
   useEffect(() => {
-    if (order && order.status === 'pending' && !processingPayment && !paymentComplete) {
+    if (order && order.status === 'pending' && !startedRef.current) {
+      startedRef.current = true;
       setProcessingPayment(true);
       timerRef.current = setTimeout(async () => {
         try {
@@ -54,7 +56,7 @@ export default function OrderDetailPage() {
             setOrder((prev) => prev ? { ...prev, status: 'confirmed' } : prev);
           }
         } catch {
-          // silent fail - will show pending
+          // silent fail
         } finally {
           setProcessingPayment(false);
         }
@@ -64,7 +66,8 @@ export default function OrderDetailPage() {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [order?.id, order?.status, processingPayment, paymentComplete]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [order?.id]);
 
   async function fetchOrder() {
     try {
