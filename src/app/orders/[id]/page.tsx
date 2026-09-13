@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -33,39 +33,34 @@ export default function OrderDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [processingPayment, setProcessingPayment] = useState(false);
   const [paymentComplete, setPaymentComplete] = useState(false);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const startedRef = useRef(false);
 
   useEffect(() => {
     fetchOrder();
   }, [params.id]);
 
   useEffect(() => {
-    if (order && order.status === 'pending' && !startedRef.current) {
-      startedRef.current = true;
-      setProcessingPayment(true);
-      timerRef.current = setTimeout(async () => {
-        try {
-          const res = await fetch(`/api/orders/${order.id}`, {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'confirmed' }),
-          });
-          if (res.ok) {
-            setPaymentComplete(true);
-            setOrder((prev) => prev ? { ...prev, status: 'confirmed' } : prev);
-          }
-        } catch {
-          // silent fail
-        } finally {
-          setProcessingPayment(false);
-        }
-      }, 5000);
-    }
+    if (!order || order.status !== 'pending') return;
 
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
+    setProcessingPayment(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/orders/${order.id}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'confirmed' }),
+        });
+        if (res.ok) {
+          setPaymentComplete(true);
+          setOrder((prev) => prev ? { ...prev, status: 'confirmed' } : prev);
+        }
+      } catch {
+        // silent fail
+      } finally {
+        setProcessingPayment(false);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timer);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [order?.id]);
 
