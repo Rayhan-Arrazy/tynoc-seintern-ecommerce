@@ -1,11 +1,28 @@
 import { type NextRequest } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import {
-  getOrders,
   createOrder,
 } from "@/lib/db";
 import { createNotification } from "@/lib/db/notification-operations";
+import { supabase } from "@/lib/db/supabase";
 import type { ApiResponse, Order, OrderItem, CartItem } from "@/types";
+
+function mapOrder(row: any): Order {
+  return {
+    id: row.id,
+    userId: row.userid,
+    items: row.items,
+    subtotal: Number(row.subtotal),
+    shipping: Number(row.shipping),
+    tax: Number(row.tax),
+    total: Number(row.total),
+    status: row.status,
+    shippingAddress: row.shipping_address,
+    paymentMethod: row.payment_method,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
 
 export async function GET(
   request: NextRequest
@@ -15,22 +32,25 @@ export async function GET(
     const userId = searchParams.get("userId");
 
     if (!userId) {
-      const response: ApiResponse<Order[]> = {
-        success: true,
-        data: [],
-      };
-      return Response.json(response, { status: 200 });
+      return Response.json({ success: true, data: [] }, { status: 200 });
     }
 
-    const orders = await getOrders(userId);
+    const { data, error } = await supabase
+      .from("orders" as any)
+      .select("*")
+      .eq("userid", userId)
+      .order("created_at", { ascending: false });
 
-    const response: ApiResponse<Order[]> = {
-      success: true,
-      data: orders,
-    };
+    if (error) {
+      console.error("Supabase orders fetch error:", error);
+      return Response.json({ success: true, data: [] }, { status: 200 });
+    }
 
-    return Response.json(response, { status: 200 });
+    const orders = (data || []).map(mapOrder);
+
+    return Response.json({ success: true, data: orders }, { status: 200 });
   } catch (error) {
+    console.error("Failed to fetch orders:", error);
     const response: ApiResponse<null> = {
       success: false,
       error: error instanceof Error ? error.message : "Failed to fetch orders",

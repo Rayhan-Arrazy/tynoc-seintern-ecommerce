@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import type { Order, OrderStatus } from '@/types';
 import { formatPrice, formatDate, getImageUrl } from '@/lib/utils';
+import { useCart } from '@/context/CartContext';
 
 const statusColors: Record<OrderStatus, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
@@ -31,6 +32,7 @@ type SimulationStep = 'payment' | 'shipping' | 'delivery' | 'done';
 
 export default function OrderDetailPage() {
   const params = useParams();
+  const { clearCart } = useCart();
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,6 +64,8 @@ export default function OrderDetailPage() {
     const t1 = setTimeout(async () => {
       const ok = await updateStatus(order.id, 'confirmed');
       if (!ok) { setStep('done'); return; }
+
+      clearCart();
 
       setStep('shipping');
       const t2 = setTimeout(async () => {
