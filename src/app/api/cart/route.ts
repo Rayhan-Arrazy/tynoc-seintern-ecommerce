@@ -5,6 +5,7 @@ import {
   addToCart,
   updateCartItem,
   removeFromCart,
+  clearCart,
 } from "@/lib/db";
 import type { ApiResponse, CartItem } from "@/types";
 
@@ -136,26 +137,17 @@ export async function DELETE(
     const { searchParams } = request.nextUrl;
     const productId = searchParams.get("productId");
 
-    if (!productId) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: "productId query parameter is required",
-      };
-      return Response.json(response, { status: 400 });
+    if (productId) {
+      await removeFromCart(DEFAULT_USER_ID, productId);
+      return Response.json({ success: true, message: "Item removed from cart successfully" }, { status: 200 });
     }
 
-    await removeFromCart(DEFAULT_USER_ID, productId);
-
-    const response: ApiResponse<null> = {
-      success: true,
-      message: "Item removed from cart successfully",
-    };
-
-    return Response.json(response, { status: 200 });
+    await clearCart(DEFAULT_USER_ID);
+    return Response.json({ success: true, message: "Cart cleared successfully" }, { status: 200 });
   } catch (error) {
     const response: ApiResponse<null> = {
       success: false,
-      error: error instanceof Error ? error.message : "Failed to remove item from cart",
+      error: error instanceof Error ? error.message : "Failed to delete cart items",
     };
     return Response.json(response, { status: 500 });
   }

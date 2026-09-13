@@ -14,9 +14,16 @@ const useSupabase = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 );
 
+const useDynamoDB = Boolean(
+  process.env.AWS_REGION && (process.env.AWS_ACCESS_KEY_ID || process.env.AWS_DYNAMODB_ENDPOINT)
+);
+
 async function getDb() {
   if (useSupabase) {
     return await import("./supabase-operations");
+  }
+  if (useDynamoDB) {
+    return await import("./operations");
   }
   return await import("./store");
 }
@@ -106,6 +113,21 @@ export async function getCategoryBySlug(slug: string): Promise<Category | null> 
 export async function createCategory(category: Category): Promise<Category> {
   const db = await getDb();
   return db.createCategory(category);
+}
+
+export async function updateCategory(
+  id: string,
+  updates: Partial<Category>
+): Promise<Category> {
+  const db = await getDb();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (db as any).updateCategory(id, updates);
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  const db = await getDb();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (db as any).deleteCategory(id);
 }
 
 // ─── Cart ────────────────────────────────────────────────────────────────────

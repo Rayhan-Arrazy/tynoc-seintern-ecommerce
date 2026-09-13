@@ -191,6 +191,27 @@ export async function createCategory(category: Category): Promise<Category> {
   return category;
 }
 
+export async function updateCategory(
+  id: string,
+  updates: Partial<Category>
+): Promise<Category> {
+  const items = ensureCategories();
+  const index = items.findIndex((c) => c.id === id);
+  if (index === -1) {
+    throw new Error("Category not found");
+  }
+  items[index] = { ...items[index], ...updates, id: items[index].id };
+  return items[index];
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  const items = ensureCategories();
+  const index = items.findIndex((c) => c.id === id);
+  if (index !== -1) {
+    items.splice(index, 1);
+  }
+}
+
 // ─── Cart ────────────────────────────────────────────────────────────────────
 
 export async function getCartItems(userId: string): Promise<CartItem[]> {

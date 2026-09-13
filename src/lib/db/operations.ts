@@ -22,6 +22,7 @@ import type {
   CartItem,
   WishlistItem,
   User,
+  UserWithPassword,
   SearchFilters,
   PaginatedResponse,
 } from "@/types";
@@ -641,5 +642,23 @@ export async function createUser(user: User): Promise<User> {
   } catch (error) {
     console.error("Error creating user:", error);
     throw new Error("Failed to create user");
+  }
+}
+
+export async function getUserByEmail(email: string): Promise<UserWithPassword | null> {
+  try {
+    const result = await docClient.send(
+      new ScanCommand({
+        TableName: USERS_TABLE,
+        FilterExpression: "#email = :email",
+        ExpressionAttributeNames: { "#email": "email" },
+        ExpressionAttributeValues: { ":email": email.toLowerCase() },
+        Limit: 1,
+      })
+    );
+    return (result.Items?.[0] as UserWithPassword) || null;
+  } catch (error) {
+    console.error("Error fetching user by email:", error);
+    throw new Error("Failed to fetch user");
   }
 }

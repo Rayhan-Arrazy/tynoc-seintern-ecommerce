@@ -1,303 +1,669 @@
-# Tynoc - Full-Stack E-Commerce Platform
+# Tynoc E-Commerce Platform
 
-A production-style full-stack e-commerce application built with Next.js, TypeScript, Supabase (PostgreSQL), and Tailwind CSS. Features a complete storefront with product browsing, search, filtering, shopping cart, and wishlist functionality.
+> A full-stack e-commerce platform built as a software engineering internship project, demonstrating modern web architecture, business logic implementation, API design, and comprehensive error handling.
 
-## Features
+---
+
+## Table of Contents
+
+- [Project Overview](#1-project-overview)
+- [Features](#2-features)
+- [Tech Stack](#3-tech-stack)
+- [Project Structure](#4-project-structure)
+- [Architecture](#5-architecture)
+- [DynamoDB Setup](#6-dynamodb-setup)
+- [Supabase Setup](#7-supabase-setup)
+- [Environment Variables](#8-environment-variables)
+- [Installation](#9-installation)
+- [API Routes](#10-api-routes)
+- [Data Models](#11-data-models)
+- [Screenshots](#12-screenshots)
+- [License](#13-license)
+
+---
+
+## 1. Project Overview
+
+**Tynoc** is a full-stack e-commerce web application built with Next.js 16, React 19, and TypeScript. It was developed as a software engineering intern project, with a focus on:
+
+- **Architecture** — A layered architecture with a data layer facade pattern that supports multiple database backends (Supabase PostgreSQL, AWS DynamoDB, and an in-memory store) with automatic fallback.
+- **Business Logic** — Product catalog management, shopping cart operations, wishlist, order processing, user authentication, and an admin dashboard.
+- **API Design** — RESTful API routes built with Next.js Route Handlers, following consistent response schemas and input validation.
+- **Error Handling** — Graceful fallback between database backends, input validation on all API endpoints, and meaningful error responses.
+
+The application features a responsive storefront with search and filtering, a complete checkout flow, real-time notifications, and a full admin dashboard for product and category management.
+
+---
+
+## 2. Features
 
 ### Storefront
-- Modern responsive homepage with hero section
-- Featured products, new arrivals, and sale sections
-- Product categories with dedicated listing pages
-- Product detail pages with image gallery, specifications, and related products
-- Search functionality with filtering and sorting
-- Responsive design across mobile, tablet, and desktop
 
-### Shopping Experience
-- Add products to cart with quantity controls
-- Update cart item quantities
-- Remove items from cart
-- Real-time subtotal calculation
-- Add/remove products from wishlist
-- Duplicate prevention in cart and wishlist
-- Empty state handling
+- **Homepage** — Hero banner, flash sale section, best sellers, new arrivals, current deals, and product categories
+- **Product Listing** — Paginated product grid with category filtering, price range filters, and sorting (newest, price ascending, price descending, rating)
+- **Product Detail** — Image gallery, product specifications, key features, stock status, star ratings, and related product recommendations
+- **Search** — Full-text search across product names and descriptions with filter combinations
 
-### Application Experience
-- Loading states for all async operations
-- Empty states with call-to-action buttons
-- Global error boundary with retry functionality
-- 404 not-found handling
-- Form validation for user inputs
-- Responsive navigation with mobile hamburger menu
+### User Management
 
-## Tech Stack
+- **Registration** — Create new accounts with name, email, and password
+- **Login** — Authenticate existing users with email/password
+- **Session Persistence** — User sessions persisted via localStorage, with automatic login on page reload
+- **Profile Settings** — View and manage account information
 
-- **Frontend:** Next.js 16, React 19, TypeScript
-- **Backend:** Next.js Route Handlers (API Routes)
-- **Database:** Supabase (PostgreSQL) with DynamoDB and in-memory fallbacks
-- **Styling:** Tailwind CSS v4
-- **Icons:** Lucide React
-- **State Management:** React Context API
-- **Package Manager:** npm
+### Shopping Cart
 
-## Project Structure
+- Add products to cart from product listing or detail pages
+- Update item quantities with subtotal recalculation
+- Remove individual items or clear the entire cart
+- Persistent cart per user with server-side storage
 
-```
-e-commerce/
-├── src/
-│   ├── app/                          # Next.js App Router pages
-│   │   ├── api/                      # API Route Handlers
-│   │   │   ├── products/             # Products CRUD API
-│   │   │   │   ├── route.ts          # GET (list), POST (create)
-│   │   │   │   └── [id]/route.ts     # GET, PUT, DELETE by ID
-│   │   │   ├── categories/           # Categories API
-│   │   │   ├── cart/                 # Shopping Cart API
-│   │   │   └── wishlist/            # Wishlist API
-│   │   ├── products/                 # Product pages
-│   │   │   ├── page.tsx              # Product listing with filters
-│   │   │   └── [id]/page.tsx         # Product detail page
-│   │   ├── categories/               # Category pages
-│   │   │   ├── page.tsx              # All categories
-│   │   │   └── [slug]/page.tsx       # Category products
-│   │   ├── cart/page.tsx             # Shopping cart page
-│   │   ├── wishlist/page.tsx         # Wishlist page
-│   │   ├── search/page.tsx           # Search results
-│   │   ├── account/page.tsx          # User account page
-│   │   ├── layout.tsx                # Root layout with providers
-│   │   ├── page.tsx                  # Homepage
-│   │   ├── not-found.tsx             # 404 page
-│   │   ├── error.tsx                 # Global error boundary
-│   │   └── loading.tsx               # Root loading state
-│   ├── components/
-│   │   ├── layout/                   # Layout components
-│   │   │   ├── Navbar.tsx            # Navigation bar
-│   │   │   ├── Footer.tsx            # Footer
-│   │   │   └── CategoriesDropdown.tsx # Category dropdown
-│   │   ├── product/                  # Product components
-│   │   │   ├── ProductGrid.tsx       # Product grid display
-│   │   │   ├── ProductDetails.tsx    # Product detail view
-│   │   │   ├── SearchFilters.tsx     # Search and filter controls
-│   │   │   ├── RelatedProducts.tsx   # Related products section
-│   │   │   └── HeroSection.tsx       # Homepage hero banner
-│   │   ├── cart/                     # Cart components
-│   │   │   ├── CartPage.tsx          # Cart page layout
-│   │   │   ├── CartItem.tsx          # Individual cart item
-│   │   │   ├── CartSummary.tsx       # Order summary
-│   │   │   └── WishlistPage.tsx      # Wishlist page
-│   │   └── ui/                       # Reusable UI components
-│   │       ├── Button.tsx            # Button with variants
-│   │       ├── ProductCard.tsx       # Product card
-│   │       ├── Rating.tsx            # Star rating display
-│   │       ├── PriceTag.tsx          # Price display
-│   │       ├── LoadingSpinner.tsx    # Loading indicator
-│   │       └── EmptyState.tsx        # Empty state component
-│   ├── context/                      # React Context providers
-│   │   ├── CartContext.tsx           # Cart state management
-│   │   └── WishlistContext.tsx       # Wishlist state management
-│   ├── lib/
-│   │   ├── db/                       # Database layer (auto-switching)
-│   │   │   ├── index.ts             # Unified data layer
-│   │   │   ├── supabase.ts          # Supabase client
-│   │   │   ├── supabase-schema.ts   # Supabase TypeScript types
-│   │   │   ├── supabase-operations.ts # Supabase CRUD operations
-│   │   │   ├── client.ts            # DynamoDB client setup
-│   │   │   ├── operations.ts        # DynamoDB CRUD operations
-│   │   │   ├── store.ts             # In-memory data store
-│   │   │   └── seed.ts             # Seed data
-│   │   └── utils/                    # Utility functions
-│   │       ├── index.ts              # General utilities
-│   │       └── validation.ts         # Input validation
-│   └── types/                        # TypeScript type definitions
-│       └── index.ts                  # All interfaces and types
-├── supabase/                         # Supabase SQL files
-│   ├── schema.sql                    # Database schema
-│   └── seed.sql                      # Seed data SQL
-├── scripts/                          # Build/utility scripts
-│   └── seed.ts                       # Seed data re-export
-├── .env.example                      # Environment variable template
-├── next.config.ts                    # Next.js configuration
-├── tsconfig.json                     # TypeScript configuration
-└── package.json                      # Project dependencies
-```
+### Wishlist
 
-## Architecture
+- Add or remove products from wishlist
+- Duplicate prevention (cannot add the same product twice)
+- Persistent wishlist per user with server-side storage
+
+### Checkout
+
+- Multi-field shipping address form with validation
+- Mock payment processing (card number, expiry, CVV, cardholder name)
+- Order placement with automatic cart clearing and notification creation
+
+### Order Management
+
+- **Order History** — List of all past orders with status indicators
+- **Order Detail** — Full breakdown of order items, quantities, prices, subtotals, shipping, tax, and total
+- **Order Status** — Status tracking (pending, confirmed, shipped, delivered, cancelled)
+
+### Notifications
+
+- Real-time bell icon in the navbar with unread count badge
+- Notifications created automatically on order placement
+- Mark individual notifications as read
+- Notification types: system, order, promotion
+
+### Admin Dashboard
+
+- **Stats Overview** — Total products, categories, orders, users, and revenue
+- **Product Management** — Add, edit, and delete products with full form validation
+- **Category Management** — Browse product categories
+
+### Responsive Design
+
+- Fully responsive layout across mobile, tablet, and desktop
+- Collapsible mobile navigation
+- Adaptive grid layouts for product cards
+
+---
+
+## 3. Tech Stack
+
+| Layer              | Technology                                      |
+| ------------------ | ----------------------------------------------- |
+| **Frontend**       | Next.js 16 (App Router), React 19, TypeScript 5 |
+| **Backend**        | Next.js Route Handlers (API Routes)             |
+| **Database**       | AWS DynamoDB, Supabase PostgreSQL, In-Memory    |
+| **Styling**        | Tailwind CSS v4                                 |
+| **State Mgmt**     | React Context API (Cart, Wishlist, Auth)         |
+| **Icons**          | Lucide React                                    |
+| **Date Utilities** | date-fns                                        |
+| **IDs**            | UUID (uuid package)                             |
+| **Version Control**| Git & GitHub                                    |
+| **Deployment**     | Vercel                                          |
+
+---
+
+## 4. Project Structure
 
 ```
-User → Next.js Application → Server/API Layer → Unified Data Layer
-                                                        ↓
-                                          ┌─────────────┼─────────────┐
-                                          ↓             ↓             ↓
-                                      Supabase      DynamoDB     In-Memory
-                                     (PostgreSQL)               (Development)
+src/
+├── app/                        # Next.js App Router pages
+│   ├── page.tsx                # Homepage
+│   ├── layout.tsx              # Root layout (Navbar, Footer, Context Providers)
+│   ├── globals.css             # Global styles
+│   ├── products/               # Product listing & detail pages
+│   │   ├── page.tsx            # All products with filters
+│   │   └── [slug]/page.tsx     # Product detail by slug
+│   ├── categories/             # Category listing & detail pages
+│   │   ├── page.tsx            # All categories
+│   │   └── [slug]/page.tsx     # Products by category
+│   ├── cart/                   # Shopping cart page
+│   ├── wishlist/               # Wishlist page
+│   ├── checkout/               # Checkout flow page
+│   ├── orders/                 # Order history & detail pages
+│   │   ├── page.tsx            # Order list
+│   │   └── [id]/page.tsx       # Order detail
+│   ├── auth/                   # Authentication pages
+│   │   ├── login/page.tsx      # Login page
+│   │   └── register/page.tsx   # Registration page
+│   ├── admin/                  # Admin dashboard
+│   │   ├── page.tsx            # Admin stats overview
+│   │   └── products/           # Product management
+│   │       └── page.tsx        # Add/edit/delete products
+│   ├── account/                # User account & settings
+│   ├── search/                 # Search results page
+│   └── api/                    # API Route Handlers
+│       ├── products/           # Product CRUD endpoints
+│       ├── categories/         # Category endpoints
+│       ├── cart/               # Cart operations
+│       ├── wishlist/           # Wishlist operations
+│       ├── auth/               # Authentication endpoints
+│       ├── orders/             # Order management
+│       ├── notifications/      # Notification endpoints
+│       └── admin/              # Admin statistics
+├── components/                 # Reusable UI components
+│   ├── ui/                     # Base components (Button, Rating, PriceTag, etc.)
+│   ├── product/                # Product-related components (ProductCard, ProductGrid)
+│   ├── cart/                   # Cart components (CartItem, CartSummary)
+│   ├── checkout/               # Checkout form components
+│   ├── layout/                 # Navbar, Footer
+│   └── notifications/          # NotificationBell component
+├── context/                    # React Context providers
+│   ├── CartContext.tsx          # Cart state management
+│   ├── WishlistContext.tsx      # Wishlist state management
+│   └── AuthContext.tsx          # Authentication state management
+├── lib/
+│   ├── db/                     # Database abstraction layer
+│   │   ├── index.ts            # Data layer facade (auto-selects backend)
+│   │   ├── client.ts           # DynamoDB client setup & table name constants
+│   │   ├── operations.ts       # DynamoDB CRUD operations
+│   │   ├── store.ts            # In-memory data store (with seed data)
+│   │   ├── supabase-operations.ts  # Supabase PostgreSQL operations
+│   │   ├── seed.ts             # Seed data (categories, products, users)
+│   │   ├── order-operations.ts # Order-specific database operations
+│   │   ├── notification-operations.ts # Notification operations
+│   │   └── admin-operations.ts # Admin dashboard statistics
+│   └── utils/                  # Utility functions
+│       ├── index.ts            # formatPrice, formatDate, getImageUrl, slugify, etc.
+│       └── validation.ts       # Input validation (email, product, cart item)
+├── types/                      # TypeScript type definitions
+│   └── index.ts                # All interfaces and type aliases
+└── public/                     # Static assets (images, icons)
 ```
 
-### Data Flow
-1. **Client Components** interact with React Context providers (Cart, Wishlist)
-2. **Context providers** make API calls to Route Handlers
-3. **Route Handlers** validate input and call database operations
-4. **Database operations** interact with DynamoDB (or in-memory store)
-5. **Responses** flow back through the stack to update the UI
+---
 
-### Key Patterns
-- **Server Components** for data fetching and static rendering
-- **Client Components** for interactive features (cart, wishlist, filters)
-- **React Context** for global state management
-- **API Route Handlers** for backend logic with proper error handling
-- **Unified data layer** with automatic database switching based on environment
-- **In-memory data store** for development without any database
+## 5. Architecture
 
-## Supabase Setup
+### High-Level Overview
 
-### 1. Create a Supabase Project
-
-1. Go to [supabase.com](https://supabase.com) and sign in
-2. Click "New Project" and fill in the details
-3. Note your **Project URL** and **Anon Key** from the API settings
-
-### 2. Run the SQL Schema
-
-1. Go to the SQL Editor in your Supabase dashboard
-2. Copy and run `supabase/schema.sql` to create all tables, indexes, and triggers
-3. Copy and run `supabase/seed.sql` to populate with sample data
-
-### Tables Created
-
-| Table | Description |
-|-------|-------------|
-| `categories` | 6 product categories |
-| `products` | 24 products with full details |
-| `users` | Demo user account |
-| `cart` | Shopping cart items |
-| `wishlist` | Saved products |
-
-### 3. Environment Variables
-
-Add to your `.env.local`:
-
-```env
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
+```
+┌──────────────────────────────────────────────────────┐
+│                      User (Browser)                   │
+└──────────────────────┬───────────────────────────────┘
+                       │ HTTP / HTTPS
+                       ▼
+┌──────────────────────────────────────────────────────┐
+│               Next.js Application                     │
+│  ┌─────────────┐  ┌──────────────┐  ┌────────────┐ │
+│  │  React Pages │  │  API Routes  │  │  Middleware │ │
+│  │  (SSR/CSR)  │  │  (Handlers)  │  │            │ │
+│  └──────┬──────┘  └──────┬───────┘  └────────────┘ │
+│         │                │                           │
+│         ▼                ▼                           │
+│  ┌──────────────────────────────────────────────┐   │
+│  │           Data Layer Facade                   │   │
+│  │        (src/lib/db/index.ts)                  │   │
+│  │                                               │   │
+│  │   Auto-selects backend based on env vars:     │   │
+│  │   1. Supabase PostgreSQL (if configured)      │   │
+│  │   2. In-Memory Store (fallback)               │   │
+│  └───────┬──────────────┬───────────────┬───────┘   │
+│          │              │               │            │
+│          ▼              ▼               ▼            │
+│  ┌─────────────┐ ┌──────────┐ ┌─────────────────┐ │
+│  │   Supabase   │ │ DynamoDB │ │   In-Memory     │ │
+│  │  PostgreSQL  │ │          │ │   (seed data)   │ │
+│  └─────────────┘ └──────────┘ └─────────────────┘ │
+└──────────────────────────────────────────────────────┘
 ```
 
-> **Note:** If `SUPABASE_URL` and `SUPABASE_ANON_KEY` are not set, the app automatically falls back to the in-memory data store.
+### Data Layer Facade Pattern
 
-## Environment Variables
+The application uses a **facade pattern** for database access (`src/lib/db/index.ts`). This module exposes a uniform API (`getAllProducts`, `getProductById`, `addToCart`, etc.) and automatically delegates to the appropriate backend:
 
-Create a `.env.local` file based on `.env.example`:
+1. **Supabase** is checked first — if `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are set, Supabase is used
+2. **In-Memory Store** is used as the fallback — pre-seeded with categories, products, and demo users
 
-```env
-# Supabase (Primary Database)
-SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your-anon-key
+Each backend implements the same function signatures, so the rest of the application remains backend-agnostic.
 
-# AWS DynamoDB (Optional Alternative)
-# AWS_REGION=us-east-1
-# AWS_ACCESS_KEY_ID=your-access-key-id
-# AWS_SECRET_ACCESS_KEY=your-secret-access-key
-```
+### Client-Side State Management
 
-> **Note:** The app automatically detects which database to use. Set Supabase vars for PostgreSQL, DynamoDB vars for AWS, or neither for the in-memory store.
+- **CartContext** — Provides `addToCart`, `updateQuantity`, `removeFromCart`, `clearCart`, and `getCartTotal` throughout the app
+- **WishlistContext** — Provides `addToWishlist`, `removeFromWishlist`, `isInWishlist`, and `getWishlistCount`
+- **AuthContext** — Provides `login`, `register`, `logout`, `user`, and `isAuthenticated` with localStorage persistence
 
-## Installation
+All three contexts are wrapped in the root layout (`src/app/layout.tsx`), making them available to every page.
 
-### Prerequisites
-- Node.js 18+ (recommended: 20+)
-- npm or yarn
+---
 
-### Setup
+## 6. DynamoDB Setup
+
+> **Note:** DynamoDB is an alternative backend. Supabase is the primary database; configure Supabase instead if preferred. If neither is configured, the app uses an in-memory store with seed data.
+
+### Create AWS Account
+
+1. Sign in to [AWS Management Console](https://console.aws.amazon.com/)
+2. Navigate to **DynamoDB** service
+
+### Create Tables
+
+Create the following DynamoDB tables in the `us-east-1` region:
+
+| Table Name    | Partition Key | Sort Key | Global Secondary Indexes                                  |
+| ------------- | ------------- | -------- | --------------------------------------------------------- |
+| `products`    | `id` (String) | —        | —                                                         |
+| `categories`  | `id` (String) | —        | —                                                         |
+| `cart`        | `id` (String) | —        | `userId-index` (PK: `userId`), `userId-productId-index` (PK: `userId`, SK: `productId`) |
+| `wishlist`    | `id` (String) | —        | `userId-index` (PK: `userId`)                             |
+| `users`       | `id` (String) | —        | `email-index` (PK: `email`)                               |
+
+### Configure Access
+
+1. Create an IAM user with `AmazonDynamoDBFullAccess` permission
+2. Generate access keys
+3. Set environment variables in `.env.local` (see [Environment Variables](#8-environment-variables))
+
+### Local Development (Optional)
+
+For local development, use [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) or [LocalStack](https://localstack.cloud/):
 
 ```bash
-# Clone the repository
-git clone <repository-url>
-cd e-commerce
-
-# Install dependencies
-npm install
-
-# Copy environment variables
-cp .env.example .env.local
-
-# (Optional) Configure AWS credentials in .env.local
-
-# Start development server
-npm run dev
+# Set in .env.local
+AWS_DYNAMODB_ENDPOINT=http://localhost:8000
 ```
+
+---
+
+## 7. Supabase Setup
+
+> **Note:** Supabase is the primary database. If configured, it takes precedence over DynamoDB.
+
+### Create Supabase Project
+
+1. Sign up at [supabase.com](https://supabase.com)
+2. Create a new project
+3. Go to **Project Settings → API**
+4. Copy the **Project URL** and **Publishable (anon) key**
+
+### Configure Environment
+
+Set these in `.env.local`:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+```
+
+When Supabase is configured, the data layer facade automatically uses Supabase PostgreSQL as the database backend.
+
+---
+
+## 8. Environment Variables
+
+Create a `.env.local` file in the project root with the following variables:
+
+```bash
+# ─── Supabase (Primary Database) ──────────────────────────────────────────────
+# Get these from your Supabase project settings: https://supabase.com/dashboard
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
+
+# ─── AWS DynamoDB (Fallback / Alternative) ────────────────────────────────────
+# Only used if Supabase env vars are NOT set
+AWS_REGION=us-east-1
+AWS_ACCESS_KEY_ID=your-access-key-id
+AWS_SECRET_ACCESS_KEY=your-secret-access-key
+
+# Optional: For local DynamoDB (e.g., DynamoDB Local or LocalStack)
+# AWS_DYNAMODB_ENDPOINT=http://localhost:8000
+
+# DynamoDB Table Names
+PRODUCTS_TABLE=products
+CATEGORIES_TABLE=categories
+CART_TABLE=cart
+WISHLIST_TABLE=wishlist
+USERS_TABLE=users
+```
+
+### Variable Reference
+
+| Variable                        | Required | Description                                              |
+| ------------------------------- | -------- | -------------------------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`      | No       | Supabase project URL (enables Supabase backend)          |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | No  | Supabase anonymous/publishable key                       |
+| `AWS_REGION`                    | No       | AWS region for DynamoDB (default: `us-east-1`)           |
+| `AWS_ACCESS_KEY_ID`             | No       | AWS IAM access key ID                                    |
+| `AWS_SECRET_ACCESS_KEY`         | No       | AWS IAM secret access key                                |
+| `AWS_DYNAMODB_ENDPOINT`         | No       | Custom endpoint for DynamoDB Local / LocalStack          |
+| `PRODUCTS_TABLE`                | No       | DynamoDB table name for products (default: `products`)   |
+| `CATEGORIES_TABLE`              | No       | DynamoDB table name for categories (default: `categories`) |
+| `CART_TABLE`                    | No       | DynamoDB table name for cart items (default: `cart`)     |
+| `WISHLIST_TABLE`                | No       | DynamoDB table name for wishlist items (default: `wishlist`) |
+| `USERS_TABLE`                   | No       | DynamoDB table name for users (default: `users`)         |
+
+> **No database required to run locally.** If no database environment variables are set, the app automatically uses an in-memory store pre-loaded with seed data (16+ products across 4 categories and 2 demo users).
+
+---
+
+## 9. Installation
+
+### Prerequisites
+
+- **Node.js** 18.17 or later
+- **npm**, **yarn**, or **pnpm**
+
+### Steps
+
+1. **Clone the repository**
+
+   ```bash
+   git clone https://github.com/your-username/e-commerce.git
+   cd e-commerce
+   ```
+
+2. **Install dependencies**
+
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment variables**
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+   Edit `.env.local` and add your database credentials (see [Environment Variables](#8-environment-variables)). The app works out of the box with no database configuration.
+
+4. **(Optional) Set up a database backend**
+
+   - **Supabase** — Follow the [Supabase Setup](#7-supabase-setup) instructions
+   - **DynamoDB** — Follow the [DynamoDB Setup](#6-dynamodb-setup) instructions
+   - **Neither** — The in-memory store will be used automatically
+
+5. **Start the development server**
+
+   ```bash
+   npm run dev
+   ```
+
+6. **Open the application**
+
+   Navigate to [http://localhost:3000](http://localhost:3000)
 
 ### Available Scripts
 
-```bash
-npm run dev      # Start development server
-npm run build    # Build for production
-npm run start    # Start production server
-npm run lint     # Run ESLint
-```
+| Command         | Description                              |
+| --------------- | ---------------------------------------- |
+| `npm run dev`   | Start the Next.js development server     |
+| `npm run build` | Build the application for production     |
+| `npm start`     | Start the production server              |
+| `npm run lint`  | Run ESLint to check for code issues      |
 
-## Screenshots
+---
 
-### Homepage
-- Hero section with call-to-action
-- Featured products grid
-- Category browsing
-- New arrivals and sale sections
+## 10. API Routes
 
-### Product Listing
-- Search bar with filters
-- Category filter dropdown
-- Price range filtering
-- Sort by price, rating, or date
-- Responsive product grid
-
-### Product Detail
-- Large product image with thumbnails
-- Product information and pricing
-- Quantity selector
-- Add to cart/wishlist buttons
-- Features and specifications
-- Related products
-
-### Shopping Cart
-- Cart items with quantity controls
-- Order summary with subtotal
-- Free shipping threshold indicator
-- Empty cart state
-
-### Wishlist
-- Saved products grid
-- Add to cart from wishlist
-- Remove from wishlist
-- Empty wishlist state
-
-## API Endpoints
+All API routes are located under `src/app/api/` and follow RESTful conventions.
 
 ### Products
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/products` | List products with filters |
-| POST | `/api/products` | Create a new product |
-| GET | `/api/products/[id]` | Get product by ID |
-| PUT | `/api/products/[id]` | Update product |
-| DELETE | `/api/products/[id]` | Delete product |
+
+| Method   | Endpoint                      | Description                         |
+| -------- | ----------------------------- | ----------------------------------- |
+| `GET`    | `/api/products`               | Get all products (with filters)     |
+| `GET`    | `/api/products/[id]`          | Get product by ID                   |
+| `POST`   | `/api/products`               | Create a new product (admin)        |
+| `PUT`    | `/api/products/[id]`          | Update a product (admin)            |
+| `DELETE` | `/api/products/[id]`          | Delete a product (admin)            |
 
 ### Categories
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/categories` | List all categories |
-| POST | `/api/categories` | Create a new category |
+
+| Method | Endpoint                      | Description                    |
+| ------ | ----------------------------- | ------------------------------ |
+| `GET`  | `/api/categories`             | Get all categories             |
+| `GET`  | `/api/categories/[id]`        | Get category by ID             |
 
 ### Cart
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/cart` | Get cart items |
-| POST | `/api/cart` | Add item to cart |
-| PUT/PATCH | `/api/cart` | Update cart item quantity |
-| DELETE | `/api/cart` | Remove item from cart |
+
+| Method   | Endpoint                 | Description                          |
+| -------- | ------------------------ | ------------------------------------ |
+| `GET`    | `/api/cart?userId=...`   | Get cart items for a user            |
+| `POST`   | `/api/cart`              | Add item to cart                     |
+| `PUT`    | `/api/cart`              | Update cart item quantity            |
+| `DELETE` | `/api/cart`              | Remove item from cart                |
 
 ### Wishlist
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/api/wishlist` | Get wishlist items |
-| POST | `/api/wishlist` | Add item to wishlist |
-| DELETE | `/api/wishlist` | Remove item from wishlist |
 
-## License
+| Method   | Endpoint                      | Description                       |
+| -------- | ----------------------------- | --------------------------------- |
+| `GET`    | `/api/wishlist?userId=...`    | Get wishlist items for a user     |
+| `POST`   | `/api/wishlist`               | Add item to wishlist              |
+| `DELETE` | `/api/wishlist`               | Remove item from wishlist         |
 
-This project was built as part of an internship task submission.
+### Authentication
+
+| Method | Endpoint         | Description                    |
+| ------ | ---------------- | ------------------------------ |
+| `POST` | `/api/auth/login`    | Authenticate user          |
+| `POST` | `/api/auth/register` | Register new user          |
+
+### Orders
+
+| Method | Endpoint                      | Description                    |
+| ------ | ----------------------------- | ------------------------------ |
+| `GET`  | `/api/orders?userId=...`      | Get user's order history       |
+| `GET`  | `/api/orders/[id]`            | Get order details              |
+| `POST` | `/api/orders`                 | Place a new order              |
+
+### Notifications
+
+| Method | Endpoint                           | Description                   |
+| ------ | ---------------------------------- | ----------------------------- |
+| `GET`  | `/api/notifications?userId=...`    | Get user's notifications      |
+| `PUT`  | `/api/notifications/[id]`          | Mark notification as read     |
+
+### Admin
+
+| Method | Endpoint           | Description                     |
+| ------ | ------------------ | ------------------------------- |
+| `GET`  | `/api/admin/stats` | Get dashboard statistics        |
+
+### Response Format
+
+All API responses follow a consistent schema:
+
+```json
+{
+  "success": true,
+  "data": { ... },
+  "error": null,
+  "message": "Operation completed successfully"
+}
+```
+
+Error responses:
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": "Invalid input",
+  "message": "Product name is required"
+}
+```
+
+---
+
+## 11. Data Models
+
+### Product
+
+```typescript
+interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  price: number;
+  originalPrice: number;
+  images: string[];
+  categoryId: string;
+  category: Category;
+  stock: number;
+  rating: number;
+  reviewCount: number;
+  features: string[];
+  specifications: Record<string, string>;
+  tags: string[];
+  isFeatured: boolean;
+  isNew: boolean;
+  isOnSale: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### Category
+
+```typescript
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  image: string;
+  productCount: number;
+}
+```
+
+### CartItem
+
+```typescript
+interface CartItem {
+  id: string;
+  productId: string;
+  product: Product;
+  quantity: number;
+  userId: string;
+  addedAt: string;
+}
+```
+
+### WishlistItem
+
+```typescript
+interface WishlistItem {
+  id: string;
+  productId: string;
+  product: Product;
+  userId: string;
+  addedAt: string;
+}
+```
+
+### User
+
+```typescript
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar: string;
+  createdAt: string;
+}
+```
+
+### Order
+
+```typescript
+interface Order {
+  id: string;
+  userId: string;
+  items: OrderItem[];
+  shippingAddress: Address;
+  paymentMethod: { cardNumber: string; expiry: string; cardholderName: string };
+  subtotal: number;
+  shipping: number;
+  tax: number;
+  total: number;
+  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+  createdAt: string;
+  updatedAt: string;
+}
+```
+
+### Notification
+
+```typescript
+interface Notification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  type: 'system' | 'order' | 'promotion';
+  read: boolean;
+  createdAt: string;
+}
+```
+
+### Search Filters
+
+```typescript
+interface SearchFilters {
+  query: string;
+  category: string;
+  minPrice: number;
+  maxPrice: number;
+  sortBy: "newest" | "price-asc" | "price-desc" | "rating";
+  page: number;
+  limit: number;
+}
+```
+
+---
+
+## 12. Screenshots
+
+### Homepage
+
+The homepage features a hero banner with a call-to-action, a flash sale countdown section highlighting discounted products, a curated best sellers carousel, new arrivals grid, current deals section, and a category browsing section. The layout is fully responsive with a sticky navigation bar containing the logo, search bar, and user/cart/wishlist icons.
+
+### Product Listing
+
+A paginated grid of product cards, each displaying the product image, name, price (with original price struck through for sale items), rating stars, and quick-add-to-cart buttons. The left sidebar contains filter controls for category selection, price range sliders, and sort dropdown. Active filters are displayed as removable chips above the grid.
+
+### Product Detail
+
+A full-width product page with an image gallery on the left (thumbnail navigation) and product information on the right. Includes product name, star rating with review count, pricing with discount percentage badge, stock indicator, quantity selector, add-to-cart and add-to-wishlist buttons, tabbed content for description/specifications/features, and a related products section at the bottom.
+
+### Shopping Cart
+
+A clean table layout showing each cart item with product image, name, individual price, quantity controls (increment/decrement buttons), line total, and a remove button. The right sidebar shows an order summary with subtotal, estimated shipping, estimated tax, and total. A prominent "Proceed to Checkout" button links to the checkout flow.
+
+### Checkout
+
+A multi-section form with shipping address fields (full name, address, city, state, zip code, country, phone), payment information (card number, expiry, CVV, cardholder name), and an order summary sidebar. Form validation provides inline error messages. A "Place Order" button submits the order and redirects to order confirmation.
+
+### Login / Register
+
+Clean, centered authentication forms with the Tynoc branding. The login form has email and password fields with a "Sign In" button and a link to register. The register form adds a name field. Both include form validation and error message display. Social login placeholders are included for future expansion.
+
+### Admin Dashboard
+
+A sidebar navigation layout with a stats overview showing cards for total products, categories, orders, users, and revenue. The product management page displays a table of all products with edit and delete actions, and an "Add Product" button that opens a form with fields for name, description, price, stock, category, images, features, specifications, and toggle switches for featured/new/sale flags.
+
+### Account Page
+
+A tabbed interface with sections for Profile (name, email, avatar display), Orders (order history list), Wishlist (grid of wishlisted products), and Settings (account preferences). Each tab shows relevant data with appropriate empty states when no data exists.
+
+---
+
+## 13. License
+
+This project was developed as a software engineering internship submission. All rights reserved.
+
+---
+
+*Built with Next.js 16, React 19, TypeScript, Tailwind CSS, and AWS DynamoDB/Supabase.*

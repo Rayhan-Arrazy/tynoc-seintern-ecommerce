@@ -1,4 +1,4 @@
-import { getAllProducts } from "@/lib/db";
+import { getAllProducts, getOrders } from "@/lib/db";
 
 export async function getDashboardStats(): Promise<{
   totalProducts: number;
@@ -6,19 +6,17 @@ export async function getDashboardStats(): Promise<{
   totalUsers: number;
   revenue: number;
 }> {
-  const result = await getAllProducts({
-    query: "",
-    category: "",
-    minPrice: 0,
-    maxPrice: Infinity,
-    sortBy: "newest",
-    page: 1,
-    limit: 1000,
-  });
+  const [productsResult, orders] = await Promise.all([
+    getAllProducts({ query: "", category: "", minPrice: 0, maxPrice: Infinity, sortBy: "newest", page: 1, limit: 1000 }),
+    getOrders("user-1"),
+  ]);
+
+  const revenue = orders.reduce((sum, order) => sum + order.total, 0);
+
   return {
-    totalProducts: result.total,
-    totalOrders: 0,
-    totalUsers: 0,
-    revenue: 0,
+    totalProducts: productsResult.total,
+    totalOrders: orders.length,
+    totalUsers: 1,
+    revenue: Math.round(revenue * 100) / 100,
   };
 }
