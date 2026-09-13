@@ -83,6 +83,7 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          userId: authState.user!.id,
           items: items.map((item) => ({
             id: item.id,
             productId: item.productId,

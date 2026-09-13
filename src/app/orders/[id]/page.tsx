@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -11,6 +11,8 @@ import {
   MapPin,
   CreditCard,
   Clock,
+  CreditCardIcon,
+  CheckCircle2,
 } from 'lucide-react';
 import type { Order, OrderStatus } from '@/types';
 import { formatPrice, formatDate, getImageUrl } from '@/lib/utils';
@@ -29,10 +31,40 @@ export default function OrderDetailPage() {
   const [order, setOrder] = useState<Order | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [processingPayment, setProcessingPayment] = useState(false);
+  const [paymentComplete, setPaymentComplete] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     fetchOrder();
   }, [params.id]);
+
+  useEffect(() => {
+    if (order && order.status === 'pending' && !processingPayment && !paymentComplete) {
+      setProcessingPayment(true);
+      timerRef.current = setTimeout(async () => {
+        try {
+          const res = await fetch(`/api/orders/${order.id}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: 'confirmed' }),
+          });
+          if (res.ok) {
+            setPaymentComplete(true);
+            setOrder((prev) => prev ? { ...prev, status: 'confirmed' } : prev);
+          }
+        } catch {
+          // silent fail - will show pending
+        } finally {
+          setProcessingPayment(false);
+        }
+      }, 5000);
+    }
+
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [order?.id, order?.status, processingPayment, paymentComplete]);
 
   async function fetchOrder() {
     try {
@@ -133,6 +165,35 @@ export default function OrderDetailPage() {
           </span>
         </div>
       </div>
+
+      {/* Payment Processing Banner */}
+      {processingPayment && (
+        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <CreditCardIcon className="w-6 h-6 text-blue-600" />
+              <Loader2 className="w-6 h-6 text-blue-600 animate-spin absolute inset-0" />
+            </div>
+            <div>
+              <p className="font-medium text-blue-900">Processing payment...</p>
+              <p className="text-sm text-blue-700">This may take a few seconds. Please do not close this page.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Payment Complete Banner */}
+      {paymentComplete && (
+        <div className="bg-green-50 border border-green-200 rounded-xl p-4 mb-6">
+          <div className="flex items-center gap-3">
+            <CheckCircle2 className="w-6 h-6 text-green-600" />
+            <div>
+              <p className="font-medium text-green-900">Payment confirmed!</p>
+              <p className="text-sm text-green-700">Your order is now being processed.</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Order Items */}

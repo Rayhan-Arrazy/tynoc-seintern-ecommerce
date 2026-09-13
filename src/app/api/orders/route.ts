@@ -8,14 +8,20 @@ import {
 import { createNotification } from "@/lib/db/notification-operations";
 import type { ApiResponse, Order, OrderItem, CartItem } from "@/types";
 
-const DEFAULT_USER_ID = "user-1";
-
 export async function GET(
   request: NextRequest
 ): Promise<Response> {
   try {
     const { searchParams } = request.nextUrl;
-    const userId = searchParams.get("userId") || DEFAULT_USER_ID;
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      const response: ApiResponse<Order[]> = {
+        success: true,
+        data: [],
+      };
+      return Response.json(response, { status: 200 });
+    }
 
     const orders = await getOrders(userId);
 
@@ -39,7 +45,15 @@ export async function POST(
 ): Promise<Response> {
   try {
     const body = await request.json();
-    const { items, shippingAddress, paymentMethod } = body;
+    const { items, shippingAddress, paymentMethod, userId } = body;
+
+    if (!userId) {
+      const response: ApiResponse<null> = {
+        success: false,
+        error: "User ID is required",
+      };
+      return Response.json(response, { status: 400 });
+    }
 
     if (!items || !Array.isArray(items) || items.length === 0) {
       const response: ApiResponse<null> = {
@@ -83,7 +97,7 @@ export async function POST(
 
     const order: Order = {
       id: uuidv4(),
-      userId: DEFAULT_USER_ID,
+      userId,
       items: orderItems,
       subtotal,
       shipping,
@@ -99,13 +113,13 @@ export async function POST(
     const created = await createOrder(order);
 
     await createNotification({
-      userId: DEFAULT_USER_ID,
+      userId,
       type: 'order',
-      title: 'Order Confirmed',
-      message: `Your order #${created.id.slice(0, 8).toUpperCase()} has been placed successfully.`,
+      title: 'Order Placed',
+      message: `Your order #${created.id.slice(0, 8).toUpperCase()} has been placed. Processing payment...`,
     });
 
-    await clearCart(DEFAULT_USER_ID);
+    await clearCart(userId);
 
     const response: ApiResponse<Order> = {
       success: true,

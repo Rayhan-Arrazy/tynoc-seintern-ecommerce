@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Bell, Check, Package, Tag, Info } from 'lucide-react';
 import type { Notification, NotificationType } from '@/types';
 import { formatDate } from '@/lib/utils';
+import { useAuth } from '@/context/AuthContext';
 
 const typeIcons: Record<NotificationType, typeof Bell> = {
   system: Info,
@@ -19,6 +20,7 @@ const typeColors: Record<NotificationType, string> = {
 };
 
 export default function NotificationBell() {
+  const { state: authState } = useAuth();
   const [isOpen, setIsOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -26,8 +28,10 @@ export default function NotificationBell() {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    fetchNotifications();
-  }, []);
+    if (authState.user) {
+      fetchNotifications();
+    }
+  }, [authState.user]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -40,9 +44,10 @@ export default function NotificationBell() {
   }, []);
 
   async function fetchNotifications() {
+    if (!authState.user) return;
     try {
       setLoading(true);
-      const res = await fetch('/api/notifications?userId=user-1');
+      const res = await fetch(`/api/notifications?userId=${authState.user.id}`);
       if (res.ok) {
         const data = await res.json();
         setNotifications(data.data ?? []);
