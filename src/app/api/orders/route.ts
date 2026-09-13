@@ -3,7 +3,6 @@ import { v4 as uuidv4 } from "uuid";
 import {
   getOrders,
   createOrder,
-  clearCart,
 } from "@/lib/db";
 import { createNotification } from "@/lib/db/notification-operations";
 import type { ApiResponse, Order, OrderItem, CartItem } from "@/types";
@@ -118,8 +117,6 @@ export async function POST(
       title: 'Order Placed',
       message: `Your order #${created.id.slice(0, 8).toUpperCase()} has been placed. Processing payment...`,
     });
-
-    await clearCart(userId);
 
     const response: ApiResponse<Order> = {
       success: true,

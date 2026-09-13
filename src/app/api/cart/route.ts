@@ -9,14 +9,16 @@ import {
 } from "@/lib/db";
 import type { ApiResponse, CartItem } from "@/types";
 
-const DEFAULT_USER_ID = "user-1";
-
 export async function GET(
   request: NextRequest
 ): Promise<Response> {
   try {
     const { searchParams } = request.nextUrl;
-    const userId = searchParams.get("userId") || DEFAULT_USER_ID;
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return Response.json({ success: true, data: [] }, { status: 200 });
+    }
 
     const items = await getCartItems(userId);
 
@@ -41,6 +43,10 @@ export async function POST(
   try {
     const body = await request.json();
 
+    if (!body.userId) {
+      return Response.json({ success: false, error: "userId is required" }, { status: 400 });
+    }
+
     if (!body.productId || !body.product) {
       const response: ApiResponse<null> = {
         success: false,
@@ -62,7 +68,7 @@ export async function POST(
       productId: body.productId,
       product: body.product,
       quantity: body.quantity,
-      userId: DEFAULT_USER_ID,
+      userId: body.userId,
       addedAt: new Date().toISOString(),
     };
 
@@ -90,6 +96,10 @@ export async function PUT(
   try {
     const body = await request.json();
 
+    if (!body.userId) {
+      return Response.json({ success: false, error: "userId is required" }, { status: 400 });
+    }
+
     if (!body.productId) {
       const response: ApiResponse<null> = {
         success: false,
@@ -106,7 +116,7 @@ export async function PUT(
       return Response.json(response, { status: 400 });
     }
 
-    const updated = await updateCartItem(DEFAULT_USER_ID, body.productId, body.quantity);
+    const updated = await updateCartItem(body.userId, body.productId, body.quantity);
 
     const response: ApiResponse<CartItem> = {
       success: true,
@@ -136,13 +146,18 @@ export async function DELETE(
   try {
     const { searchParams } = request.nextUrl;
     const productId = searchParams.get("productId");
+    const userId = searchParams.get("userId");
+
+    if (!userId) {
+      return Response.json({ success: true, message: "No userId provided" }, { status: 200 });
+    }
 
     if (productId) {
-      await removeFromCart(DEFAULT_USER_ID, productId);
+      await removeFromCart(userId, productId);
       return Response.json({ success: true, message: "Item removed from cart successfully" }, { status: 200 });
     }
 
-    await clearCart(DEFAULT_USER_ID);
+    await clearCart(userId);
     return Response.json({ success: true, message: "Cart cleared successfully" }, { status: 200 });
   } catch (error) {
     const response: ApiResponse<null> = {

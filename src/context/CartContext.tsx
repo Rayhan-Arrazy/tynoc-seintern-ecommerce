@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import { CartItem, Product } from '@/types';
+import { useAuth } from '@/context/AuthContext';
 
 interface CartState {
   items: CartItem[];
@@ -22,6 +23,9 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { state: authState } = useAuth();
+  const userId = authState.user?.id;
+
   const [state, setState] = useState<CartState>({
     items: [],
     loading: true,
@@ -29,13 +33,18 @@ export function CartProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    fetchCart();
-  }, []);
+    if (userId) {
+      fetchCart();
+    } else {
+      setState({ items: [], loading: false, error: null });
+    }
+  }, [userId]);
 
   const fetchCart = async () => {
+    if (!userId) return;
     try {
       setState((prev) => ({ ...prev, loading: true, error: null }));
-      const res = await fetch('/api/cart');
+      const res = await fetch(`/api/cart?userId=${userId}`);
       if (!res.ok) throw new Error('Failed to fetch cart');
       const data = await res.json();
       setState((prev) => ({ ...prev, items: data.data ?? [], loading: false }));
@@ -49,12 +58,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const addItem = useCallback(async (product: Product, quantity = 1) => {
+    if (!userId) return;
     try {
       setState((prev) => ({ ...prev, error: null }));
       const res = await fetch('/api/cart', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId: product.id, product, quantity }),
+        body: JSON.stringify({ userId, productId: product.id, product, quantity }),
       });
       if (!res.ok) throw new Error('Failed to add item to cart');
       const data = await res.json();
@@ -75,12 +85,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         error: err instanceof Error ? err.message : 'An error occurred',
       }));
     }
-  }, []);
+  }, [userId]);
 
   const removeItem = useCallback(async (productId: string) => {
+    if (!userId) return;
     try {
       setState((prev) => ({ ...prev, error: null }));
-      const res = await fetch(`/api/cart?productId=${productId}`, {
+      const res = await fetch(`/api/cart?productId=${productId}&userId=${userId}`, {
         method: 'DELETE',
       });
       if (!res.ok) throw new Error('Failed to remove item from cart');
@@ -94,15 +105,16 @@ export function CartProvider({ children }: { children: ReactNode }) {
         error: err instanceof Error ? err.message : 'An error occurred',
       }));
     }
-  }, []);
+  }, [userId]);
 
   const updateQuantity = useCallback(async (productId: string, quantity: number) => {
+    if (!userId) return;
     try {
       setState((prev) => ({ ...prev, error: null }));
       const res = await fetch('/api/cart', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ productId, quantity }),
+        body: JSON.stringify({ userId, productId, quantity }),
       });
       if (!res.ok) throw new Error('Failed to update quantity');
       const data = await res.json();
@@ -118,12 +130,13 @@ export function CartProvider({ children }: { children: ReactNode }) {
         error: err instanceof Error ? err.message : 'An error occurred',
       }));
     }
-  }, []);
+  }, [userId]);
 
   const clearCart = useCallback(async () => {
+    if (!userId) return;
     try {
       setState((prev) => ({ ...prev, error: null }));
-      const res = await fetch('/api/cart', { method: 'DELETE' });
+      const res = await fetch(`/api/cart?userId=${userId}`, { method: 'DELETE' });
       if (!res.ok) throw new Error('Failed to clear cart');
       setState((prev) => ({ ...prev, items: [] }));
     } catch (err) {
@@ -132,7 +145,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         error: err instanceof Error ? err.message : 'An error occurred',
       }));
     }
-  }, []);
+  }, [userId]);
 
   const getSubtotal = useCallback(() => {
     return state.items.reduce(
