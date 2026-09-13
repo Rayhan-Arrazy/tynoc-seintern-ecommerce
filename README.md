@@ -2,23 +2,35 @@
 
 > A full-stack e-commerce platform built as a software engineering internship project, demonstrating modern web architecture, business logic implementation, API design, and comprehensive error handling.
 
+**Live Demo:** [https://tynoc-seintern-ecommerce.vercel.app](https://tynoc-seintern-ecommerce.vercel.app)
+
+---
+
+## Quick Start (Demo Account)
+
+| Field    | Value                |
+| -------- | -------------------- |
+| **Email**    | `demo@example.com`       |
+| **Password** | `password123`            |
+| **URL**      | [Login Page](https://tynoc-seintern-ecommerce.vercel.app/auth/login) |
+
 ---
 
 ## Table of Contents
 
+- [Quick Start](#quick-start-demo-account)
 - [Project Overview](#1-project-overview)
 - [Features](#2-features)
 - [Tech Stack](#3-tech-stack)
 - [Project Structure](#4-project-structure)
 - [Architecture](#5-architecture)
-- [DynamoDB Setup](#6-dynamodb-setup)
-- [Supabase Setup](#7-supabase-setup)
-- [Environment Variables](#8-environment-variables)
-- [Installation](#9-installation)
-- [API Routes](#10-api-routes)
-- [Data Models](#11-data-models)
-- [Screenshots](#12-screenshots)
-- [License](#13-license)
+- [Database Setup (Supabase)](#6-database-setup-supabase)
+- [Environment Variables](#7-environment-variables)
+- [Installation](#8-installation)
+- [API Routes](#9-api-routes)
+- [Database Schema](#10-database-schema)
+- [Screenshots](#11-screenshots)
+- [License](#12-license)
 
 ---
 
@@ -27,11 +39,11 @@
 **Tynoc** is a full-stack e-commerce web application built with Next.js 16, React 19, and TypeScript. It was developed as a software engineering intern project, with a focus on:
 
 - **Architecture** — A layered architecture with a data layer facade pattern that supports multiple database backends (Supabase PostgreSQL, AWS DynamoDB, and an in-memory store) with automatic fallback.
-- **Business Logic** — Product catalog management, shopping cart operations, wishlist, order processing, user authentication, and an admin dashboard.
+- **Business Logic** — Product catalog management, shopping cart operations, wishlist, order processing with lifecycle simulation, user authentication, real-time notifications, and an admin dashboard.
 - **API Design** — RESTful API routes built with Next.js Route Handlers, following consistent response schemas and input validation.
 - **Error Handling** — Graceful fallback between database backends, input validation on all API endpoints, and meaningful error responses.
 
-The application features a responsive storefront with search and filtering, a complete checkout flow, real-time notifications, and a full admin dashboard for product and category management.
+The application features a responsive storefront with search and filtering, a complete checkout flow, real-time notifications, order lifecycle simulation, and a full admin dashboard for product and category management.
 
 ---
 
@@ -46,7 +58,7 @@ The application features a responsive storefront with search and filtering, a co
 
 ### User Management
 
-- **Registration** — Create new accounts with name, email, and password
+- **Registration** — Create new accounts with name, email, and password (stored as bcrypt hash)
 - **Login** — Authenticate existing users with email/password
 - **Session Persistence** — User sessions persisted via localStorage, with automatic login on page reload
 - **Profile Settings** — View and manage account information
@@ -56,30 +68,32 @@ The application features a responsive storefront with search and filtering, a co
 - Add products to cart from product listing or detail pages
 - Update item quantities with subtotal recalculation
 - Remove individual items or clear the entire cart
-- Persistent cart per user with server-side storage
+- Cart clears automatically when order payment is confirmed
+- Persistent cart per user stored in Supabase
 
 ### Wishlist
 
 - Add or remove products from wishlist
 - Duplicate prevention (cannot add the same product twice)
-- Persistent wishlist per user with server-side storage
+- Persistent wishlist per user stored in Supabase
 
 ### Checkout
 
 - Multi-field shipping address form with validation
 - Mock payment processing (card number, expiry, CVV, cardholder name)
-- Order placement with automatic cart clearing and notification creation
+- Order placement with real-time notifications
 
 ### Order Management
 
 - **Order History** — List of all past orders with status indicators
 - **Order Detail** — Full breakdown of order items, quantities, prices, subtotals, shipping, tax, and total
-- **Order Status** — Status tracking (pending, confirmed, shipped, delivered, cancelled)
+- **Order Lifecycle Simulation** — Automatic status progression: pending → confirmed (5s) → shipped (5s) → delivered (5s)
+- **Status Tracking** — Visual banners indicating current status with color-coded indicators
 
 ### Notifications
 
-- Real-time bell icon in the navbar with unread count badge
-- Notifications created automatically on order placement
+- Real-time bell icon in the navbar with unread count badge (polls every 10 seconds)
+- Notifications created automatically on: registration (welcome), order placement, payment confirmed, order shipped, order delivered
 - Mark individual notifications as read
 - Notification types: system, order, promotion
 
@@ -99,18 +113,20 @@ The application features a responsive storefront with search and filtering, a co
 
 ## 3. Tech Stack
 
-| Layer              | Technology                                      |
-| ------------------ | ----------------------------------------------- |
-| **Frontend**       | Next.js 16 (App Router), React 19, TypeScript 5 |
-| **Backend**        | Next.js Route Handlers (API Routes)             |
-| **Database**       | AWS DynamoDB, Supabase PostgreSQL, In-Memory    |
-| **Styling**        | Tailwind CSS v4                                 |
-| **State Mgmt**     | React Context API (Cart, Wishlist, Auth)         |
-| **Icons**          | Lucide React                                    |
-| **Date Utilities** | date-fns                                        |
-| **IDs**            | UUID (uuid package)                             |
-| **Version Control**| Git & GitHub                                    |
-| **Deployment**     | Vercel                                          |
+| Layer              | Technology                                       |
+| ------------------ | ------------------------------------------------ |
+| **Frontend**       | Next.js 16 (App Router), React 19, TypeScript 5  |
+| **Backend**        | Next.js Route Handlers (API Routes)              |
+| **Database**       | Supabase PostgreSQL (primary), DynamoDB, In-Memory |
+| **ORM/Client**     | @supabase/supabase-js v2                        |
+| **Styling**        | Tailwind CSS v4                                  |
+| **State Mgmt**     | React Context API (Cart, Wishlist, Auth)          |
+| **Icons**          | Lucide React                                     |
+| **Date Utilities** | date-fns                                         |
+| **IDs**            | UUID (uuid package + crypto.randomUUID)          |
+| **Password Hash**  | bcrypt                                           |
+| **Version Control**| Git & GitHub                                     |
+| **Deployment**     | Vercel                                           |
 
 ---
 
@@ -133,7 +149,7 @@ src/
 │   ├── checkout/               # Checkout flow page
 │   ├── orders/                 # Order history & detail pages
 │   │   ├── page.tsx            # Order list
-│   │   └── [id]/page.tsx       # Order detail
+│   │   └── [id]/page.tsx       # Order detail with lifecycle simulation
 │   ├── auth/                   # Authentication pages
 │   │   ├── login/page.tsx      # Login page
 │   │   └── register/page.tsx   # Registration page
@@ -149,7 +165,7 @@ src/
 │       ├── cart/               # Cart operations
 │       ├── wishlist/           # Wishlist operations
 │       ├── auth/               # Authentication endpoints
-│       ├── orders/             # Order management
+│       ├── orders/             # Order management (GET, POST, PATCH)
 │       ├── notifications/      # Notification endpoints
 │       └── admin/              # Admin statistics
 ├── components/                 # Reusable UI components
@@ -166,10 +182,12 @@ src/
 ├── lib/
 │   ├── db/                     # Database abstraction layer
 │   │   ├── index.ts            # Data layer facade (auto-selects backend)
-│   │   ├── client.ts           # DynamoDB client setup & table name constants
+│   │   ├── client.ts           # DynamoDB client setup
 │   │   ├── operations.ts       # DynamoDB CRUD operations
 │   │   ├── store.ts            # In-memory data store (with seed data)
-│   │   ├── supabase-operations.ts  # Supabase PostgreSQL operations
+│   │   ├── supabase.ts         # Supabase client initialization
+│   │   ├── supabase-schema.ts  # Supabase Database TypeScript types
+│   │   ├── supabase-operations.ts  # Supabase CRUD operations
 │   │   ├── seed.ts             # Seed data (categories, products, users)
 │   │   ├── order-operations.ts # Order-specific database operations
 │   │   ├── notification-operations.ts # Notification operations
@@ -180,6 +198,10 @@ src/
 ├── types/                      # TypeScript type definitions
 │   └── index.ts                # All interfaces and type aliases
 └── public/                     # Static assets (images, icons)
+
+supabase/
+├── schema.sql                  # Complete database schema (all 7 tables)
+└── seed.sql                    # Seed data (25 products, 6 categories, 1 user)
 ```
 
 ---
@@ -226,7 +248,7 @@ The application uses a **facade pattern** for database access (`src/lib/db/index
 1. **Supabase** is checked first — if `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` are set, Supabase is used
 2. **In-Memory Store** is used as the fallback — pre-seeded with categories, products, and demo users
 
-Each backend implements the same function signatures, so the rest of the application remains backend-agnostic.
+> **Note:** Order and cart API routes (`/api/orders`, `/api/cart`) query Supabase directly to ensure permanent data storage. The facade layer is used for products, categories, and user operations.
 
 ### Client-Side State Management
 
@@ -238,56 +260,37 @@ All three contexts are wrapped in the root layout (`src/app/layout.tsx`), making
 
 ---
 
-## 6. DynamoDB Setup
+## 6. Database Setup (Supabase)
 
-> **Note:** DynamoDB is an alternative backend. Supabase is the primary database; configure Supabase instead if preferred. If neither is configured, the app uses an in-memory store with seed data.
+> **Supabase is the primary database.** All data (products, users, cart, wishlist, orders, notifications) is stored permanently in PostgreSQL.
 
-### Create AWS Account
-
-1. Sign in to [AWS Management Console](https://console.aws.amazon.com/)
-2. Navigate to **DynamoDB** service
-
-### Create Tables
-
-Create the following DynamoDB tables in the `us-east-1` region:
-
-| Table Name    | Partition Key | Sort Key | Global Secondary Indexes                                  |
-| ------------- | ------------- | -------- | --------------------------------------------------------- |
-| `products`    | `id` (String) | —        | —                                                         |
-| `categories`  | `id` (String) | —        | —                                                         |
-| `cart`        | `id` (String) | —        | `userId-index` (PK: `userId`), `userId-productId-index` (PK: `userId`, SK: `productId`) |
-| `wishlist`    | `id` (String) | —        | `userId-index` (PK: `userId`)                             |
-| `users`       | `id` (String) | —        | `email-index` (PK: `email`)                               |
-
-### Configure Access
-
-1. Create an IAM user with `AmazonDynamoDBFullAccess` permission
-2. Generate access keys
-3. Set environment variables in `.env.local` (see [Environment Variables](#8-environment-variables))
-
-### Local Development (Optional)
-
-For local development, use [DynamoDB Local](https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/DynamoDBLocal.html) or [LocalStack](https://localstack.cloud/):
-
-```bash
-# Set in .env.local
-AWS_DYNAMODB_ENDPOINT=http://localhost:8000
-```
-
----
-
-## 7. Supabase Setup
-
-> **Note:** Supabase is the primary database. If configured, it takes precedence over DynamoDB.
-
-### Create Supabase Project
+### Step 1: Create Supabase Project
 
 1. Sign up at [supabase.com](https://supabase.com)
 2. Create a new project
 3. Go to **Project Settings → API**
 4. Copy the **Project URL** and **Publishable (anon) key**
 
-### Configure Environment
+### Step 2: Run Schema
+
+1. Go to **Supabase Dashboard → SQL Editor**
+2. Paste the contents of `supabase/schema.sql`
+3. Click **Run**
+
+This creates all 7 tables: `categories`, `products`, `users`, `cart`, `wishlist`, `orders`, `notifications` with indexes, triggers, and RLS policies.
+
+### Step 3: Seed Data
+
+1. In the same SQL Editor
+2. Paste the contents of `supabase/seed.sql`
+3. Click **Run**
+
+This populates:
+- **6 categories** (Electronics, Clothing, Home & Kitchen, Sports & Outdoors, Books, Beauty)
+- **25 products** with full details (descriptions, specs, images, ratings)
+- **1 demo user** (`demo@example.com` / `password123`)
+
+### Step 4: Configure Environment
 
 Set these in `.env.local`:
 
@@ -296,58 +299,37 @@ NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 ```
 
-When Supabase is configured, the data layer facade automatically uses Supabase PostgreSQL as the database backend.
-
 ---
 
-## 8. Environment Variables
+## 7. Environment Variables
 
-Create a `.env.local` file in the project root with the following variables:
+Create a `.env.local` file in the project root:
 
 ```bash
 # ─── Supabase (Primary Database) ──────────────────────────────────────────────
-# Get these from your Supabase project settings: https://supabase.com/dashboard
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=your-publishable-key
 
-# ─── AWS DynamoDB (Fallback / Alternative) ────────────────────────────────────
+# ─── AWS DynamoDB (Alternative — optional) ────────────────────────────────────
 # Only used if Supabase env vars are NOT set
 AWS_REGION=us-east-1
 AWS_ACCESS_KEY_ID=your-access-key-id
 AWS_SECRET_ACCESS_KEY=your-secret-access-key
-
-# Optional: For local DynamoDB (e.g., DynamoDB Local or LocalStack)
-# AWS_DYNAMODB_ENDPOINT=http://localhost:8000
-
-# DynamoDB Table Names
-PRODUCTS_TABLE=products
-CATEGORIES_TABLE=categories
-CART_TABLE=cart
-WISHLIST_TABLE=wishlist
-USERS_TABLE=users
 ```
-
-### Variable Reference
 
 | Variable                        | Required | Description                                              |
 | ------------------------------- | -------- | -------------------------------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`      | No       | Supabase project URL (enables Supabase backend)          |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | No  | Supabase anonymous/publishable key                       |
+| `NEXT_PUBLIC_SUPABASE_URL`      | Yes      | Supabase project URL                                     |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Yes  | Supabase anonymous/publishable key                       |
 | `AWS_REGION`                    | No       | AWS region for DynamoDB (default: `us-east-1`)           |
 | `AWS_ACCESS_KEY_ID`             | No       | AWS IAM access key ID                                    |
 | `AWS_SECRET_ACCESS_KEY`         | No       | AWS IAM secret access key                                |
-| `AWS_DYNAMODB_ENDPOINT`         | No       | Custom endpoint for DynamoDB Local / LocalStack          |
-| `PRODUCTS_TABLE`                | No       | DynamoDB table name for products (default: `products`)   |
-| `CATEGORIES_TABLE`              | No       | DynamoDB table name for categories (default: `categories`) |
-| `CART_TABLE`                    | No       | DynamoDB table name for cart items (default: `cart`)     |
-| `WISHLIST_TABLE`                | No       | DynamoDB table name for wishlist items (default: `wishlist`) |
-| `USERS_TABLE`                   | No       | DynamoDB table name for users (default: `users`)         |
 
-> **No database required to run locally.** If no database environment variables are set, the app automatically uses an in-memory store pre-loaded with seed data (16+ products across 4 categories and 2 demo users).
+> **No database required to run locally.** If no database environment variables are set, the app uses an in-memory store pre-loaded with seed data.
 
 ---
 
-## 9. Installation
+## 8. Installation
 
 ### Prerequisites
 
@@ -359,8 +341,8 @@ USERS_TABLE=users
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/your-username/e-commerce.git
-   cd e-commerce
+   git clone https://github.com/Rayhan-Arrazy/tynoc-seintern-ecommerce.git
+   cd tynoc-seintern-ecommerce
    ```
 
 2. **Install dependencies**
@@ -375,13 +357,11 @@ USERS_TABLE=users
    cp .env.example .env.local
    ```
 
-   Edit `.env.local` and add your database credentials (see [Environment Variables](#8-environment-variables)). The app works out of the box with no database configuration.
+   Edit `.env.local` and add your Supabase credentials (see [Environment Variables](#7-environment-variables)).
 
-4. **(Optional) Set up a database backend**
+4. **Set up database** (recommended)
 
-   - **Supabase** — Follow the [Supabase Setup](#7-supabase-setup) instructions
-   - **DynamoDB** — Follow the [DynamoDB Setup](#6-dynamodb-setup) instructions
-   - **Neither** — The in-memory store will be used automatically
+   Follow the [Supabase Setup](#6-database-setup-supabase) instructions to create tables and seed data.
 
 5. **Start the development server**
 
@@ -404,7 +384,7 @@ USERS_TABLE=users
 
 ---
 
-## 10. API Routes
+## 9. API Routes
 
 All API routes are located under `src/app/api/` and follow RESTful conventions.
 
@@ -444,18 +424,19 @@ All API routes are located under `src/app/api/` and follow RESTful conventions.
 
 ### Authentication
 
-| Method | Endpoint         | Description                    |
-| ------ | ---------------- | ------------------------------ |
-| `POST` | `/api/auth/login`    | Authenticate user          |
-| `POST` | `/api/auth/register` | Register new user          |
+| Method | Endpoint              | Description               |
+| ------ | --------------------- | ------------------------- |
+| `POST` | `/api/auth/login`     | Authenticate user         |
+| `POST` | `/api/auth/register`  | Register new user (creates welcome notification) |
 
 ### Orders
 
-| Method | Endpoint                      | Description                    |
-| ------ | ----------------------------- | ------------------------------ |
-| `GET`  | `/api/orders?userId=...`      | Get user's order history       |
-| `GET`  | `/api/orders/[id]`            | Get order details              |
-| `POST` | `/api/orders`                 | Place a new order              |
+| Method | Endpoint                      | Description                                |
+| ------ | ----------------------------- | ------------------------------------------ |
+| `GET`  | `/api/orders?userId=...`      | Get user's order history                   |
+| `GET`  | `/api/orders/[id]`            | Get order details                          |
+| `POST` | `/api/orders`                 | Place a new order (creates notification)   |
+| `PATCH`| `/api/orders/[id]`            | Update order status (creates notification) |
 
 ### Notifications
 
@@ -496,135 +477,45 @@ Error responses:
 
 ---
 
-## 11. Data Models
+## 10. Database Schema
 
-### Product
+### Tables
 
-```typescript
-interface Product {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  price: number;
-  originalPrice: number;
-  images: string[];
-  categoryId: string;
-  category: Category;
-  stock: number;
-  rating: number;
-  reviewCount: number;
-  features: string[];
-  specifications: Record<string, string>;
-  tags: string[];
-  isFeatured: boolean;
-  isNew: boolean;
-  isOnSale: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+| Table          | Description                                      | Key Columns                                                    |
+| -------------- | ------------------------------------------------ | -------------------------------------------------------------- |
+| `categories`   | Product categories                               | id, name, slug (unique), description, image, productcount     |
+| `products`     | Product catalog (25 items)                       | id, name, slug (unique), price, images, categoryid (FK), stock, rating |
+| `users`        | Registered users                                 | id, name, email (unique), password (bcrypt), avatar            |
+| `cart`         | Shopping cart items per user                     | id, productid, product (JSONB), quantity, userid               |
+| `wishlist`     | Wishlist items per user                          | id, productid, product (JSONB), userid                         |
+| `orders`       | Customer orders                                  | id, userid, items (JSONB), subtotal, shipping, tax, total, status, shipping_address, payment_method |
+| `notifications`| User notifications                               | id, userid, title, message, type, is_read                      |
+
+### Order Status Flow
+
+```
+pending → confirmed → shipped → delivered
+   ↓
+cancelled
 ```
 
-### Category
+Each status transition automatically creates a notification for the user.
 
-```typescript
-interface Category {
-  id: string;
-  name: string;
-  slug: string;
-  description: string;
-  image: string;
-  productCount: number;
-}
-```
+### Indexes
 
-### CartItem
+- `products`: categoryid, isfeatured, isnew, isonsale
+- `cart`: userid, unique (userid + productid)
+- `wishlist`: userid, unique (userid + productid)
+- `orders`: userid
+- `notifications`: userid
 
-```typescript
-interface CartItem {
-  id: string;
-  productId: string;
-  product: Product;
-  quantity: number;
-  userId: string;
-  addedAt: string;
-}
-```
+### Row Level Security
 
-### WishlistItem
-
-```typescript
-interface WishlistItem {
-  id: string;
-  productId: string;
-  product: Product;
-  userId: string;
-  addedAt: string;
-}
-```
-
-### User
-
-```typescript
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar: string;
-  createdAt: string;
-}
-```
-
-### Order
-
-```typescript
-interface Order {
-  id: string;
-  userId: string;
-  items: OrderItem[];
-  shippingAddress: Address;
-  paymentMethod: { cardNumber: string; expiry: string; cardholderName: string };
-  subtotal: number;
-  shipping: number;
-  tax: number;
-  total: number;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
-  createdAt: string;
-  updatedAt: string;
-}
-```
-
-### Notification
-
-```typescript
-interface Notification {
-  id: string;
-  userId: string;
-  title: string;
-  message: string;
-  type: 'system' | 'order' | 'promotion';
-  read: boolean;
-  createdAt: string;
-}
-```
-
-### Search Filters
-
-```typescript
-interface SearchFilters {
-  query: string;
-  category: string;
-  minPrice: number;
-  maxPrice: number;
-  sortBy: "newest" | "price-asc" | "price-desc" | "rating";
-  page: number;
-  limit: number;
-}
-```
+All tables have RLS enabled with permissive "Allow all" policies (suitable for this project's auth model).
 
 ---
 
-## 12. Screenshots
+## 11. Screenshots
 
 ### Homepage
 
@@ -632,7 +523,7 @@ The homepage features a hero banner with a call-to-action, a flash sale countdow
 
 ### Product Listing
 
-A paginated grid of product cards, each displaying the product image, name, price (with original price struck through for sale items), rating stars, and quick-add-to-cart buttons. The left sidebar contains filter controls for category selection, price range sliders, and sort dropdown. Active filters are displayed as removable chips above the grid.
+A paginated grid of product cards, each displaying the product image, name, price (with original price struck through for sale items), rating stars, and quick-add-to-cart buttons. The left sidebar contains filter controls for category selection, price range sliders, and sort dropdown.
 
 ### Product Detail
 
@@ -640,30 +531,38 @@ A full-width product page with an image gallery on the left (thumbnail navigatio
 
 ### Shopping Cart
 
-A clean table layout showing each cart item with product image, name, individual price, quantity controls (increment/decrement buttons), line total, and a remove button. The right sidebar shows an order summary with subtotal, estimated shipping, estimated tax, and total. A prominent "Proceed to Checkout" button links to the checkout flow.
+A clean table layout showing each cart item with product image, name, individual price, quantity controls (increment/decrement buttons), line total, and a remove button. The right sidebar shows an order summary with subtotal, estimated shipping, estimated tax, and total.
 
 ### Checkout
 
-A multi-section form with shipping address fields (full name, address, city, state, zip code, country, phone), payment information (card number, expiry, CVV, cardholder name), and an order summary sidebar. Form validation provides inline error messages. A "Place Order" button submits the order and redirects to order confirmation.
+A multi-section form with shipping address fields (full name, address, city, state, zip code, country, phone), payment information (card number, expiry, CVV, cardholder name), and an order summary sidebar. Form validation provides inline error messages.
+
+### Order Detail with Lifecycle Simulation
+
+After placing an order, the detail page shows real-time status progression with visual banners:
+- Blue banner: "Processing Payment..."
+- Purple banner: "Confirming Order..."
+- Amber banner: "Shipping Order..."
+- Green banner: "Order Delivered!"
 
 ### Login / Register
 
-Clean, centered authentication forms with the Tynoc branding. The login form has email and password fields with a "Sign In" button and a link to register. The register form adds a name field. Both include form validation and error message display. Social login placeholders are included for future expansion.
+Clean, centered authentication forms with the Tynoc branding. The login form has email and password fields with a "Sign In" button and a link to register. Both include form validation and error message display.
 
 ### Admin Dashboard
 
-A sidebar navigation layout with a stats overview showing cards for total products, categories, orders, users, and revenue. The product management page displays a table of all products with edit and delete actions, and an "Add Product" button that opens a form with fields for name, description, price, stock, category, images, features, specifications, and toggle switches for featured/new/sale flags.
+A sidebar navigation layout with a stats overview showing cards for total products, categories, orders, users, and revenue. The product management page displays a table of all products with edit and delete actions.
 
 ### Account Page
 
-A tabbed interface with sections for Profile (name, email, avatar display), Orders (order history list), Wishlist (grid of wishlisted products), and Settings (account preferences). Each tab shows relevant data with appropriate empty states when no data exists.
+A tabbed interface with sections for Profile (name, email, avatar display), Orders (order history list), Wishlist (grid of wishlisted products), and Settings (account preferences).
 
 ---
 
-## 13. License
+## 12. License
 
 This project was developed as a software engineering internship submission. All rights reserved.
 
 ---
 
-*Built with Next.js 16, React 19, TypeScript, Tailwind CSS, and AWS DynamoDB/Supabase.*
+*Built with Next.js 16, React 19, TypeScript, Tailwind CSS, and Supabase PostgreSQL.*
