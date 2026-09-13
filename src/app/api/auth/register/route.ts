@@ -2,6 +2,7 @@ import { type NextRequest } from "next/server";
 import { v4 as uuidv4 } from "uuid";
 import bcrypt from "bcryptjs";
 import { createUser } from "@/lib/db";
+import { createNotification } from "@/lib/db/notification-operations";
 import type { ApiResponse, User, UserWithPassword } from "@/types";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -49,6 +50,13 @@ export async function POST(
     };
 
     const created = await createUser(user);
+
+    await createNotification({
+      userId: created.id,
+      type: "system",
+      title: "Welcome to Tynoc!",
+      message: "Thanks for joining. Explore our latest products and exclusive deals.",
+    });
 
     const response: ApiResponse<User> = {
       success: true,

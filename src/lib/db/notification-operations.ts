@@ -5,35 +5,7 @@ const useSupabase = Boolean(
   process.env.NEXT_PUBLIC_SUPABASE_URL && process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 );
 
-let notifications: Notification[] = [
-  {
-    id: uuidv4(),
-    userId: "user-1",
-    type: "system",
-    title: "Welcome to Tynoc!",
-    message: "Thanks for joining Tynoc. Explore our latest products and exclusive deals.",
-    read: false,
-    createdAt: "2026-09-10T08:00:00.000Z",
-  },
-  {
-    id: uuidv4(),
-    userId: "user-1",
-    type: "order",
-    title: "Order Shipped",
-    message: "Your order #ORD-8A3F has been shipped via FedEx. Track: FX123456789",
-    read: false,
-    createdAt: "2026-09-11T14:30:00.000Z",
-  },
-  {
-    id: uuidv4(),
-    userId: "user-1",
-    type: "promotion",
-    title: "Flash Sale: Up to 50% Off",
-    message: "Don't miss our biggest sale of the season. Ends Sunday!",
-    read: true,
-    createdAt: "2026-09-08T10:00:00.000Z",
-  },
-];
+let notifications: Notification[] = [];
 
 async function getSupabase() {
   if (!useSupabase) return null;
