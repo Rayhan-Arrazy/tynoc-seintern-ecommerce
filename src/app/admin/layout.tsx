@@ -7,8 +7,10 @@ import { usePathname } from 'next/navigation';
 const navLinks = [
   { href: '/admin', label: 'Dashboard', icon: '📊' },
   { href: '/admin/products', label: 'Products', icon: '📦' },
+  { href: '/admin/categories', label: 'Categories', icon: '🏷️' },
   { href: '/admin/orders', label: 'Orders', icon: '🛒' },
   { href: '/admin/users', label: 'Users', icon: '👥' },
+  { href: '/admin/cart', label: 'Cart & Wishlist', icon: '💝' },
 ];
 
 export default function AdminLayout({
@@ -21,7 +23,6 @@ export default function AdminLayout({
 
   return (
     <div className="min-h-screen bg-gray-100">
-      {/* Mobile overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 z-30 bg-black/50 lg:hidden"
@@ -29,7 +30,6 @@ export default function AdminLayout({
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`fixed inset-y-0 left-0 z-40 w-64 bg-gray-900 text-white transform transition-transform duration-200 ease-in-out lg:translate-x-0 ${
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
@@ -61,11 +61,17 @@ export default function AdminLayout({
             );
           })}
         </nav>
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+          >
+            ← Back to Store
+          </Link>
+        </div>
       </aside>
 
-      {/* Main content */}
       <div className="lg:pl-64">
-        {/* Top bar */}
         <header className="sticky top-0 z-20 bg-white border-b border-gray-200 px-4 py-3 flex items-center gap-4">
           <button
             onClick={() => setSidebarOpen(true)}
