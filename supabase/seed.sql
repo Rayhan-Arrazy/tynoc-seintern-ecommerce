@@ -501,13 +501,25 @@ ON CONFLICT (id) DO UPDATE SET
   updated_at = EXCLUDED.updated_at;
 
 -- ============================================================
--- Demo User (bcrypt hash of "password123")
+-- Demo User (bcrypt hash of "password123") - ADMIN
 -- ============================================================
-INSERT INTO users (id, name, email, password, avatar, created_at)
+INSERT INTO users (id, name, email, password, avatar, is_admin, created_at)
 VALUES
   ('660e8400-e29b-41d4-a716-446655440099', 'Demo User', 'demo@example.com',
    '$2b$10$rT3JfSm0bnOLl1U5gUYujucmM0HV3AjDHGZUSlRSBRC04zCZRKSkK',
-   'https://picsum.photos/seed/avatar/100/100', '2024-01-01T00:00:00Z')
+   'https://picsum.photos/seed/avatar/100/100', true, '2024-01-01T00:00:00Z')
 ON CONFLICT (id) DO UPDATE SET
   name = EXCLUDED.name, email = EXCLUDED.email, password = EXCLUDED.password,
-  avatar = EXCLUDED.avatar;
+  avatar = EXCLUDED.avatar, is_admin = EXCLUDED.is_admin;
+
+-- ============================================================
+-- Regular User (bcrypt hash of "password123")
+-- ============================================================
+INSERT INTO users (id, name, email, password, avatar, is_admin, created_at)
+VALUES
+  ('770e8400-e29b-41d4-a716-446655440099', 'Regular User', 'user@example.com',
+   '$2b$10$rT3JfSm0bnOLl1U5gUYujucmM0HV3AjDHGZUSlRSBRC04zCZRKSkK',
+   'https://picsum.photos/seed/avatar2/100/100', false, '2024-01-15T00:00:00Z')
+ON CONFLICT (id) DO UPDATE SET
+  name = EXCLUDED.name, email = EXCLUDED.email, password = EXCLUDED.password,
+  avatar = EXCLUDED.avatar, is_admin = EXCLUDED.is_admin;

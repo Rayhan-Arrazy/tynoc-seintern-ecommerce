@@ -113,6 +113,7 @@ export interface Database {
           email: string;
           password: string | null;
           avatar: string | null;
+          is_admin: boolean;
           created_at: string;
         };
         Insert: {
@@ -121,6 +122,7 @@ export interface Database {
           email: string;
           password?: string | null;
           avatar?: string | null;
+          is_admin?: boolean;
           created_at?: string;
         };
         Update: {
@@ -129,6 +131,7 @@ export interface Database {
           email?: string;
           password?: string | null;
           avatar?: string | null;
+          is_admin?: boolean;
           created_at?: string;
         };
       };

@@ -68,6 +68,7 @@ CREATE TABLE IF NOT EXISTS users (
   email      text        NOT NULL UNIQUE,
   password   text,
   avatar     text,
+  is_admin   boolean     NOT NULL DEFAULT false,
   created_at timestamptz NOT NULL DEFAULT now()
 );
 

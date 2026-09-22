@@ -1,43 +1,42 @@
-import { type NextRequest } from "next/server";
-import { getUserById } from "@/lib/db";
-import type { ApiResponse, User } from "@/types";
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
 
-export async function GET(
-  request: NextRequest
-): Promise<Response> {
-  try {
-    const { searchParams } = request.nextUrl;
-    const userId = searchParams.get("userId");
-
-    if (!userId) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: "userId query parameter is required",
-      };
-      return Response.json(response, { status: 400 });
+export async function GET(request: NextRequest) {
+  const response = NextResponse.next();
+  
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
     }
+  );
 
-    const user = await getUserById(userId);
+  const { data: { session } } = await supabase.auth.getSession();
 
-    if (!user) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: "User not found",
-      };
-      return Response.json(response, { status: 404 });
-    }
-
-    const response: ApiResponse<User> = {
-      success: true,
-      data: user,
-    };
-
-    return Response.json(response, { status: 200 });
-  } catch (error) {
-    const response: ApiResponse<null> = {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to fetch user",
-    };
-    return Response.json(response, { status: 500 });
+  if (!session?.user) {
+    return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
   }
+
+  const { data: user } = await (supabase as any)
+    .from('users')
+    .select('id, name, email, avatar, is_admin, created_at')
+    .eq('id', session.user.id)
+    .single();
+
+  if (!user) {
+    return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
+  }
+
+  return NextResponse.json({ success: true, data: user });
 }

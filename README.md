@@ -6,13 +6,27 @@
 
 ---
 
-## Quick Start (Demo Account)
+## Quick Start (Demo Accounts)
+
+### Admin Account (Full Admin Dashboard Access)
 
 | Field    | Value                |
 | -------- | -------------------- |
 | **Email**    | `demo@example.com`       |
 | **Password** | `password123`            |
+| **Role**     | Admin                    |
 | **URL**      | [Login Page](https://tynoc-seintern-ecommerce.vercel.app/auth/login) |
+
+### Regular User Account (Storefront Only)
+
+| Field    | Value                |
+| -------- | -------------------- |
+| **Email**    | `user@example.com`       |
+| **Password** | `password123`            |
+| **Role**     | User                     |
+| **URL**      | [Login Page](https://tynoc-seintern-ecommerce.vercel.app/auth/login) |
+
+> **Note:** The admin dashboard (`/admin`) is protected by middleware and client-side checks. Only users with `is_admin = true` in the database can access it.
 
 ---
 
