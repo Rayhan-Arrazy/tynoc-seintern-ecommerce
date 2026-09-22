@@ -12,7 +12,7 @@
 
 | Field    | Value                |
 | -------- | -------------------- |
-| **Email**    | `demo@example.com`       |
+| **Email**    | `admin@example.com`       |
 | **Password** | `password123`            |
 | **Role**     | Admin                    |
 | **URL**      | [Login Page](https://tynoc-seintern-ecommerce.vercel.app/auth/login) |

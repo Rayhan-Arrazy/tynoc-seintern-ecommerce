@@ -501,11 +501,11 @@ ON CONFLICT (id) DO UPDATE SET
   updated_at = EXCLUDED.updated_at;
 
 -- ============================================================
--- Demo User (bcrypt hash of "password123") - ADMIN
+-- Admin User (bcrypt hash of "password123")
 -- ============================================================
 INSERT INTO users (id, name, email, password, avatar, is_admin, created_at)
 VALUES
-  ('660e8400-e29b-41d4-a716-446655440099', 'Demo User', 'demo@example.com',
+  ('660e8400-e29b-41d4-a716-446655440099', 'Admin User', 'admin@example.com',
    '$2b$10$rT3JfSm0bnOLl1U5gUYujucmM0HV3AjDHGZUSlRSBRC04zCZRKSkK',
    'https://picsum.photos/seed/avatar/100/100', true, '2024-01-01T00:00:00Z')
 ON CONFLICT (id) DO UPDATE SET
