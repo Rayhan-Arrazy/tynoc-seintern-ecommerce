@@ -45,6 +45,7 @@ export async function POST(
       email: userData.email,
       avatar: userData.avatar || '',
       createdAt: userData.created_at || userData.createdAt,
+      isAdmin: ADMIN_USER_IDS.includes(userData.id),
     };
 
     // Create response with session cookie

@@ -1,52 +1,49 @@
-import { createServerClient } from '@supabase/ssr';
+import { supabase } from '@/lib/db/supabase';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
 // Admin user IDs from seed data
 const ADMIN_USER_IDS = ['660e8400-e29b-41d4-a716-446655440099'];
 
+interface SessionData {
+  userId: string;
+  email: string;
+  isAdmin: boolean;
+  expiresAt: number;
+}
+
 export async function GET(request: NextRequest) {
-  const response = NextResponse.next();
-  
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options);
-          });
-        },
-      },
-    }
-  );
-
-  const { data: { session } } = await supabase.auth.getSession();
-
-  if (!session?.user) {
+  const cookie = request.cookies.get('tynoc_session');
+  if (!cookie?.value) {
     return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
   }
 
-  // Query without is_admin column (may not exist yet)
-  const { data: user } = await (supabase as any)
+  let session: SessionData;
+  try {
+    session = JSON.parse(cookie.value) as SessionData;
+  } catch {
+    return NextResponse.json({ success: false, error: 'Invalid session' }, { status: 401 });
+  }
+
+  if (session.expiresAt < Date.now()) {
+    return NextResponse.json({ success: false, error: 'Session expired' }, { status: 401 });
+  }
+
+  const { data: user, error } = await (supabase as any)
     .from('users')
     .select('id, name, email, avatar, created_at')
-    .eq('id', session.user.id)
+    .eq('id', session.userId)
     .single();
 
-  if (!user) {
+  if (error || !user) {
     return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
   }
 
-  // Add is_admin flag based on hardcoded list
-  const userWithAdmin = {
-    ...user,
-    is_admin: ADMIN_USER_IDS.includes(user.id),
-  };
-
-  return NextResponse.json({ success: true, data: userWithAdmin });
+  return NextResponse.json({
+    success: true,
+    data: {
+      ...user,
+      isAdmin: ADMIN_USER_IDS.includes(user.id),
+    },
+  });
 }

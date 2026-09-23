@@ -53,6 +53,7 @@ export interface User {
   email: string;
   avatar: string;
   createdAt: string;
+  isAdmin?: boolean;
 }
 
 export interface UserWithPassword extends User {

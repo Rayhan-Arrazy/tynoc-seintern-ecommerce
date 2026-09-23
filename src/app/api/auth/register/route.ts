@@ -63,6 +63,7 @@ export async function POST(
       email: email.toLowerCase().trim(),
       avatar: userData.avatar,
       createdAt: userData.created_at,
+      isAdmin: ADMIN_USER_IDS.includes(newId),
     };
 
     // Create welcome notification

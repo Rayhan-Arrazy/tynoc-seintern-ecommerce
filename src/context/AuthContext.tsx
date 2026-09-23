@@ -26,17 +26,45 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   });
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(AUTH_STORAGE_KEY);
-      if (stored) {
+    let cancelled = false;
+
+    async function loadUser() {
+      try {
+        const stored = localStorage.getItem(AUTH_STORAGE_KEY);
+        if (!stored) {
+          if (!cancelled) setState({ user: null, loading: false });
+          return;
+        }
+
         const user = JSON.parse(stored) as User;
-        setState({ user, loading: false });
-      } else {
-        setState({ user: null, loading: false });
+
+        // Enrich with isAdmin from the httpOnly session cookie (server-readable)
+        try {
+          const res = await fetch('/api/auth/me');
+          if (res.ok) {
+            const data = await res.json();
+            if (data.success && data.data) {
+              const enriched: User = {
+                ...user,
+                isAdmin: data.data.isAdmin === true,
+              };
+              localStorage.setItem(AUTH_STORAGE_KEY, JSON.stringify(enriched));
+              if (!cancelled) setState({ user: enriched, loading: false });
+              return;
+            }
+          }
+        } catch { /* fall through to stored user */ }
+
+        if (!cancelled) setState({ user, loading: false });
+      } catch {
+        if (!cancelled) setState({ user: null, loading: false });
       }
-    } catch {
-      setState({ user: null, loading: false });
     }
+
+    loadUser();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {

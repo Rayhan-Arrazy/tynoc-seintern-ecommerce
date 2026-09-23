@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useAuth } from '@/context/AuthContext';
 
 const navLinks = [
   { href: '/admin', label: 'Dashboard', icon: '📊' },
@@ -14,53 +15,24 @@ const navLinks = [
   { href: '/admin/cart', label: 'Cart & Wishlist', icon: '💝' },
 ];
 
-// Admin user IDs from seed data
-const ADMIN_USER_IDS = ['660e8400-e29b-41d4-a716-446655440099'];
-
-interface SessionData {
-  userId: string;
-  email: string;
-  isAdmin: boolean;
-  expiresAt: number;
-}
-
-function getSessionFromCookie(): SessionData | null {
-  try {
-    const cookie = document.cookie.split('; ').find(row => row.startsWith('tynoc_session='));
-    if (!cookie) return null;
-    const value = decodeURIComponent(cookie.split('=')[1]);
-    const session = JSON.parse(value) as SessionData;
-    if (session.expiresAt < Date.now()) return null;
-    return session;
-  } catch {
-    return null;
-  }
-}
-
 export default function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [isAuthorized, setIsAuthorized] = useState(false);
-  const [loading, setLoading] = useState(true);
   const pathname = usePathname();
   const router = useRouter();
+  const { state: authState } = useAuth();
+
+  const loading = authState.loading;
+  const isAuthorized = !authState.loading && authState.user?.isAdmin === true;
 
   useEffect(() => {
-    checkAdminAccess();
-  }, []);
-
-  function checkAdminAccess() {
-    const session = getSessionFromCookie();
-    if (session?.userId && ADMIN_USER_IDS.includes(session.userId)) {
-      setIsAuthorized(true);
-    } else {
+    if (!authState.loading && !authState.user?.isAdmin) {
       router.push('/');
     }
-    setLoading(false);
-  }
+  }, [authState.loading, authState.user, router]);
 
   if (loading) {
     return (
