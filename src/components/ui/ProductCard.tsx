@@ -39,7 +39,7 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
         <div className="relative aspect-square overflow-hidden bg-gray-100">
           <Image
-            src={getImageUrl(product.images[0])}
+            src={getImageUrl(product.images?.[0] || product.id)}
             alt={product.name}
             fill
             sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"

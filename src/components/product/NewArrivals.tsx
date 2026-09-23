@@ -40,7 +40,7 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
           >
             <div className="relative aspect-square bg-gray-50 overflow-hidden">
               <Image
-                src={getImageUrl(product.images[0])}
+                src={getImageUrl(product.images?.[0] || product.id)}
                 alt={product.name}
                 fill
                 sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"

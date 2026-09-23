@@ -74,7 +74,7 @@ export default function BestSellers({ products }: BestSellersProps) {
             >
               <div className="relative aspect-square bg-gray-50 overflow-hidden">
                 <Image
-                  src={getImageUrl(product.images[0])}
+                  src={getImageUrl(product.images?.[0] || product.id)}
                   alt={product.name}
                   fill
                   sizes="192px"

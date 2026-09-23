@@ -57,7 +57,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         <div>
           <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 mb-4">
             <Image
-              src={getImageUrl(product.images[selectedImage])}
+              src={getImageUrl(product.images?.[selectedImage] || product.id)}
               alt={product.name}
               fill
               sizes="(max-width: 1024px) 100vw, 50vw"
@@ -70,7 +70,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
               </span>
             )}
           </div>
-          {product.images.length > 1 && (
+          {product.images.length > 0 && (
             <div className="flex gap-3">
               {product.images.map((img, idx) => (
                 <button

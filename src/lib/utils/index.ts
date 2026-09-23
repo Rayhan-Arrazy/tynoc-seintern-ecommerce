@@ -22,7 +22,10 @@ export function truncate(text: string, length: number): string {
   return text.slice(0, length).trimEnd() + "...";
 }
 
-export function getImageUrl(imageId: string): string {
+export function getImageUrl(imageId?: string): string {
+  if (!imageId) {
+    return `https://picsum.photos/seed/placeholder/600/600`;
+  }
   if (imageId.startsWith("http://") || imageId.startsWith("https://")) {
     return imageId;
   }
