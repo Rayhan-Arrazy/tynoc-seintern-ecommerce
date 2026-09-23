@@ -3,12 +3,15 @@
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown } from 'lucide-react';
+import { Search, Heart, ShoppingBag, User, Menu, X, ChevronDown, LayoutDashboard } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
 import { useAuth } from '@/context/AuthContext';
 import NotificationBell from '@/components/notifications/NotificationBell';
 import CategoriesDropdown from './CategoriesDropdown';
+
+// Admin user ID from seed data
+const ADMIN_USER_ID = '660e8400-e29b-41d4-a716-446655440099';
 
 export default function Navbar() {
   const router = useRouter();
@@ -23,6 +26,7 @@ export default function Navbar() {
 
   const cartCount = cartState.items?.length ?? 0;
   const wishlistCount = wishlistState.items?.length ?? 0;
+  const isAdmin = authState.user?.id === ADMIN_USER_ID;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
@@ -106,6 +110,17 @@ export default function Navbar() {
               )}
             </Link>
 
+            {/* Admin Panel Button - only for admin */}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="hidden sm:flex items-center gap-2 px-3 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Admin Panel
+              </Link>
+            )}
+
             <Link href="/account" className="hidden sm:flex items-center gap-2 p-2 text-gray-700 hover:text-blue-600 transition-colors">
               <User className="w-5 h-5" />
               {authState.user ? (
@@ -164,6 +179,16 @@ export default function Navbar() {
             >
               Categories
             </Link>
+            {isAdmin && (
+              <Link
+                href="/admin"
+                onClick={() => setMobileMenuOpen(false)}
+                className="block py-2 text-purple-600 hover:text-purple-700 font-medium flex items-center gap-2"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Admin Panel
+              </Link>
+            )}
             <Link
               href="/account"
               onClick={() => setMobileMenuOpen(false)}
