@@ -13,6 +13,26 @@ import CategoriesDropdown from './CategoriesDropdown';
 // Admin user ID from seed data
 const ADMIN_USER_ID = '660e8400-e29b-41d4-a716-446655440099';
 
+interface SessionData {
+  userId: string;
+  email: string;
+  isAdmin: boolean;
+  expiresAt: number;
+}
+
+function getSessionFromCookie(): SessionData | null {
+  try {
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('tynoc_session='));
+    if (!cookie) return null;
+    const value = decodeURIComponent(cookie.split('=')[1]);
+    const session = JSON.parse(value) as SessionData;
+    if (session.expiresAt < Date.now()) return null;
+    return session;
+  } catch {
+    return null;
+  }
+}
+
 export default function Navbar() {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -26,7 +46,8 @@ export default function Navbar() {
 
   const cartCount = cartState.items?.length ?? 0;
   const wishlistCount = wishlistState.items?.length ?? 0;
-  const isAdmin = authState.user?.id === ADMIN_USER_ID;
+  const session = getSessionFromCookie();
+  const isAdmin = session?.userId === ADMIN_USER_ID;
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
