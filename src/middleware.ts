@@ -35,7 +35,7 @@ export async function middleware(request: NextRequest) {
 
   if (isAdminRoute || isAdminApi) {
     if (!session?.user) {
-      const loginUrl = new URL('/login', request.url);
+      const loginUrl = new URL('/auth/login', request.url);
       loginUrl.searchParams.set('redirect', request.nextUrl.pathname);
       return NextResponse.redirect(loginUrl);
     }
