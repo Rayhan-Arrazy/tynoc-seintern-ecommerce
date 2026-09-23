@@ -1,7 +1,12 @@
-import { type NextRequest } from "next/server";
-import bcrypt from "bcryptjs";
-import { getUserByEmail } from "@/lib/db";
-import type { ApiResponse, User } from "@/types";
+import { createServerClient } from '@supabase/ssr';
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import bcrypt from 'bcryptjs';
+import { getUserByEmail } from '@/lib/db';
+import type { ApiResponse, User } from '@/types';
+
+// Admin user IDs from seed data
+const ADMIN_USER_IDS = ['660e8400-e29b-41d4-a716-446655440099'];
 
 export async function POST(
   request: NextRequest
@@ -10,57 +15,49 @@ export async function POST(
     const body = await request.json();
     const { email, password } = body;
 
-    if (!email || typeof email !== "string") {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: "Email is required",
-      };
-      return Response.json(response, { status: 400 });
+    if (!email || typeof email !== 'string') {
+      return NextResponse.json({ success: false, error: 'Email is required' }, { status: 400 });
     }
-
-    if (!password || typeof password !== "string") {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: "Password is required",
-      };
-      return Response.json(response, { status: 400 });
+    if (!password || typeof password !== 'string') {
+      return NextResponse.json({ success: false, error: 'Password is required' }, { status: 400 });
     }
 
     const userWithPassword = await getUserByEmail(email.toLowerCase().trim());
 
     if (!userWithPassword) {
-      const response: ApiResponse<null> = {
-        success: false,
-        error: "Invalid email or password",
-      };
-      return Response.json(response, { status: 401 });
+      return NextResponse.json({ success: false, error: 'Invalid email or password' }, { status: 401 });
     }
 
     const isValid = await bcrypt.compare(password, userWithPassword.password);
     if (!isValid) {
       if (userWithPassword.password !== password) {
-        const response: ApiResponse<null> = {
-          success: false,
-          error: "Invalid email or password",
-        };
-        return Response.json(response, { status: 401 });
+        return NextResponse.json({ success: false, error: 'Invalid email or password' }, { status: 401 });
       }
     }
 
     const { password: _, ...user } = userWithPassword;
 
-    const response: ApiResponse<User> = {
-      success: true,
-      data: user,
-      message: "Login successful",
+    // Create response with session cookie
+    const response = NextResponse.json({ success: true, data: user, message: 'Login successful' }, { status: 200 });
+    
+    // Set custom session cookie for middleware (7 days)
+    const sessionData = {
+      userId: user.id,
+      email: user.email,
+      isAdmin: ADMIN_USER_IDS.includes(user.id),
+      expiresAt: Date.now() + 7 * 24 * 60 * 60 * 1000,
     };
+    
+    response.cookies.set('tynoc_session', JSON.stringify(sessionData), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 7,
+      path: '/',
+    });
 
-    return Response.json(response, { status: 200 });
+    return response;
   } catch (error) {
-    const response: ApiResponse<null> = {
-      success: false,
-      error: error instanceof Error ? error.message : "Failed to login",
-    };
-    return Response.json(response, { status: 500 });
+    return NextResponse.json({ success: false, error: error instanceof Error ? error.message : 'Failed to login' }, { status: 500 });
   }
 }

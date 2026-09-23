@@ -17,6 +17,26 @@ const navLinks = [
 // Admin user IDs from seed data
 const ADMIN_USER_IDS = ['660e8400-e29b-41d4-a716-446655440099'];
 
+interface SessionData {
+  userId: string;
+  email: string;
+  isAdmin: boolean;
+  expiresAt: number;
+}
+
+function getSessionFromCookie(): SessionData | null {
+  try {
+    const cookie = document.cookie.split('; ').find(row => row.startsWith('tynoc_session='));
+    if (!cookie) return null;
+    const value = decodeURIComponent(cookie.split('=')[1]);
+    const session = JSON.parse(value) as SessionData;
+    if (session.expiresAt < Date.now()) return null;
+    return session;
+  } catch {
+    return null;
+  }
+}
+
 export default function AdminLayout({
   children,
 }: {
@@ -32,20 +52,14 @@ export default function AdminLayout({
     checkAdminAccess();
   }, []);
 
-  async function checkAdminAccess() {
-    try {
-      const res = await fetch('/api/auth/me');
-      const json = await res.json();
-      if (json.success && json.data?.id && ADMIN_USER_IDS.includes(json.data.id)) {
-        setIsAuthorized(true);
-      } else {
-        router.push('/');
-      }
-    } catch {
+  function checkAdminAccess() {
+    const session = getSessionFromCookie();
+    if (session?.userId && ADMIN_USER_IDS.includes(session.userId)) {
+      setIsAuthorized(true);
+    } else {
       router.push('/');
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }
 
   if (loading) {
