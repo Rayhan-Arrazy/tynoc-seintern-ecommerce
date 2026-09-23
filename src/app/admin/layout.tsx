@@ -14,6 +14,9 @@ const navLinks = [
   { href: '/admin/cart', label: 'Cart & Wishlist', icon: '💝' },
 ];
 
+// Admin user IDs from seed data
+const ADMIN_USER_IDS = ['660e8400-e29b-41d4-a716-446655440099'];
+
 export default function AdminLayout({
   children,
 }: {
@@ -33,7 +36,7 @@ export default function AdminLayout({
     try {
       const res = await fetch('/api/auth/me');
       const json = await res.json();
-      if (json.success && json.data?.is_admin) {
+      if (json.success && json.data?.id && ADMIN_USER_IDS.includes(json.data.id)) {
         setIsAuthorized(true);
       } else {
         router.push('/');

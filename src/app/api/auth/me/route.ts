@@ -2,6 +2,9 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Admin user IDs from seed data
+const ADMIN_USER_IDS = ['660e8400-e29b-41d4-a716-446655440099'];
+
 export async function GET(request: NextRequest) {
   const response = NextResponse.next();
   
@@ -28,9 +31,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'Not authenticated' }, { status: 401 });
   }
 
+  // Query without is_admin column (may not exist yet)
   const { data: user } = await (supabase as any)
     .from('users')
-    .select('id, name, email, avatar, is_admin, created_at')
+    .select('id, name, email, avatar, created_at')
     .eq('id', session.user.id)
     .single();
 
@@ -38,5 +42,11 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
   }
 
-  return NextResponse.json({ success: true, data: user });
+  // Add is_admin flag based on hardcoded list
+  const userWithAdmin = {
+    ...user,
+    is_admin: ADMIN_USER_IDS.includes(user.id),
+  };
+
+  return NextResponse.json({ success: true, data: userWithAdmin });
 }

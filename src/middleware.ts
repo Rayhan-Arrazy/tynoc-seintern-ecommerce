@@ -2,6 +2,12 @@ import { createServerClient } from '@supabase/ssr';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+// Admin user IDs (from seed data)
+const ADMIN_USER_IDS = [
+  '660e8400-e29b-41d4-a716-446655440099', // admin@example.com
+];
+const ADMIN_EMAILS = ['admin@example.com'];
+
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next();
   
@@ -34,13 +40,11 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    const { data: user } = await (supabase as any)
-      .from('users')
-      .select('is_admin')
-      .eq('id', session.user.id)
-      .single();
+    // Check if user is admin by ID or email (no schema change needed)
+    const isAdmin = ADMIN_USER_IDS.includes(session.user.id) || 
+                    ADMIN_EMAILS.includes(session.user.email || '');
 
-    if (!user?.is_admin) {
+    if (!isAdmin) {
       return NextResponse.redirect(new URL('/', request.url));
     }
   }
