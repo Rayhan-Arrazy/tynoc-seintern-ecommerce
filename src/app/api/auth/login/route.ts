@@ -1,8 +1,7 @@
-import { createServerClient } from '@supabase/ssr';
+import { supabase } from '@/lib/db/supabase';
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import bcrypt from 'bcryptjs';
-import { getUserByEmail } from '@/lib/db';
 import type { ApiResponse, User } from '@/types';
 
 // Admin user IDs from seed data
@@ -22,20 +21,31 @@ export async function POST(
       return NextResponse.json({ success: false, error: 'Password is required' }, { status: 400 });
     }
 
-    const userWithPassword = await getUserByEmail(email.toLowerCase().trim());
+    // Query Supabase directly
+    const { data: userData, error } = await (supabase as any)
+      .from('users')
+      .select('*')
+      .eq('email', email.toLowerCase().trim())
+      .single();
 
-    if (!userWithPassword) {
+    if (error || !userData) {
       return NextResponse.json({ success: false, error: 'Invalid email or password' }, { status: 401 });
     }
 
-    const isValid = await bcrypt.compare(password, userWithPassword.password);
+    const isValid = await bcrypt.compare(password, userData.password);
     if (!isValid) {
-      if (userWithPassword.password !== password) {
+      if (userData.password !== password) {
         return NextResponse.json({ success: false, error: 'Invalid email or password' }, { status: 401 });
       }
     }
 
-    const { password: _, ...user } = userWithPassword;
+    const user: User = {
+      id: userData.id,
+      name: userData.name,
+      email: userData.email,
+      avatar: userData.avatar || '',
+      createdAt: userData.created_at || userData.createdAt,
+    };
 
     // Create response with session cookie
     const response = NextResponse.json({ success: true, data: user, message: 'Login successful' }, { status: 200 });
