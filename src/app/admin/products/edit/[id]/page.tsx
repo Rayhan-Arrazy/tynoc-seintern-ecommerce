@@ -5,14 +5,6 @@ import { useRouter } from 'next/navigation';
 import Button from '@/components/ui/Button';
 import type { Category, Product } from '@/types';
 
-const DUMMY_IMAGES = [
-  'https://cdn.dummyjson.com/products/images/beauty/essence-mascara-black-pearl/thumbnail.webp',
-  'https://cdn.dummyjson.com/products/images/fragrances/cologne-perfume/thumbnail.webp',
-  'https://cdn.dummyjson.com/products/images/furniture/office-chair/thumbnail.webp',
-  'https://cdn.dummyjson.com/products/images/groceries/orange/thumbnail.webp',
-  'https://cdn.dummyjson.com/products/images/home-accessories/asia-map/thumbnail.webp',
-];
-
 interface FormData {
   name: string;
   slug: string;
@@ -391,7 +383,7 @@ export default function EditProductPage({
             value={form.imageUrl}
             onChange={(e) => updateField('imageUrl', e.target.value)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="https://cdn.dummyjson.com/products/images/..."
+            placeholder="Product image URL"
           />
           {form.imageUrl && (
             <div className="mt-2 w-20 h-20 rounded-lg border border-gray-200 overflow-hidden">
@@ -405,19 +397,6 @@ export default function EditProductPage({
               />
             </div>
           )}
-          <div className="mt-2 flex flex-wrap gap-1">
-            <span className="text-xs text-gray-500">Suggestions:</span>
-            {DUMMY_IMAGES.map((url) => (
-              <button
-                key={url}
-                type="button"
-                onClick={() => updateField('imageUrl', url)}
-                className="text-xs text-blue-600 hover:underline truncate max-w-[150px]"
-              >
-                {url.split('/').slice(-2, -1)[0]}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Features */}

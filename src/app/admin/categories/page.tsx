@@ -201,7 +201,7 @@ export default function AdminCategoriesPage() {
                   value={form.image}
                   onChange={(e) => setForm((f) => ({ ...f, image: e.target.value }))}
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="https://..."
+                  placeholder="Image URL"
                 />
               </div>
             </div>

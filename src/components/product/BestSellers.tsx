@@ -2,11 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { TrendingUp } from 'lucide-react';
 import type { Product } from '@/types';
 import { getImageUrl, formatPrice } from '@/lib/utils';
 import Rating from '@/components/ui/Rating';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface BestSellersProps {
   products: Product[];
@@ -73,7 +73,7 @@ export default function BestSellers({ products }: BestSellersProps) {
               className="flex-shrink-0 w-48 bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group"
             >
               <div className="relative aspect-square bg-gray-50 overflow-hidden">
-                <Image
+                <SafeImage
                   src={getImageUrl(product.images?.[0] || product.id)}
                   alt={product.name}
                   fill

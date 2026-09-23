@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import type { Product, Category, PaginatedResponse } from '@/types';
+import { getImageUrl } from '@/lib/utils';
 
 export default function AdminProductsPage() {
   const router = useRouter();
@@ -152,10 +153,14 @@ export default function AdminProductsPage() {
                     <td className="px-5 py-3">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-gray-100 overflow-hidden flex-shrink-0">
-                          {product.images?.[0] ? (
-                            <img src={product.images[0]} alt={product.name} className="w-full h-full object-cover" />
+                          {getImageUrl(product.images?.[0] || product.id) ? (
+                            <img
+                              src={getImageUrl(product.images?.[0] || product.id)}
+                              alt={product.name}
+                              className="w-full h-full object-cover"
+                            />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">No img</div>
+                            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">📦</div>
                           )}
                         </div>
                         <span className="font-medium text-gray-900 truncate max-w-[200px]">{product.name}</span>

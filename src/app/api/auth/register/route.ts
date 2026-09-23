@@ -46,7 +46,7 @@ export async function POST(
       id: newId,
       name: name.trim(),
       email: email.toLowerCase().trim(),
-      avatar: `https://picsum.photos/seed/${uuidv4().slice(0, 8)}/100/100`,
+      avatar: "",
       created_at: new Date().toISOString(),
       password: hashedPassword,
     };

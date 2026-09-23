@@ -1,9 +1,9 @@
 'use client';
 
-import Image from 'next/image';
 import { Loader2, ShieldCheck } from 'lucide-react';
 import { useCart } from '@/context/CartContext';
 import { formatPrice, getImageUrl } from '@/lib/utils';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface OrderSummaryProps {
   onSubmit: () => void;
@@ -27,7 +27,7 @@ export default function OrderSummary({ onSubmit, isSubmitting }: OrderSummaryPro
         {items.map((item) => (
           <div key={item.id} className="flex gap-3">
             <div className="relative w-14 h-14 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-              <Image
+              <SafeImage
                 src={getImageUrl(item.product.images[0] || item.product.id)}
                 alt={item.product.name}
                 fill

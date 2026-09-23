@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { Heart, ShoppingCart, Check, Star, ChevronRight } from 'lucide-react';
 import { Product } from '@/types';
 import { formatPrice, calculateDiscount, getImageUrl } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
 import { useWishlist } from '@/context/WishlistContext';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface ProductDetailsProps {
   product: Product;
@@ -56,7 +56,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
         <div>
           <div className="relative aspect-square rounded-2xl overflow-hidden bg-gray-100 mb-4">
-            <Image
+            <SafeImage
               src={getImageUrl(product.images?.[selectedImage] || product.id)}
               alt={product.name}
               fill
@@ -80,7 +80,7 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
                     selectedImage === idx ? 'border-blue-600' : 'border-gray-200 hover:border-gray-400'
                   }`}
                 >
-                  <Image
+                  <SafeImage
                     src={getImageUrl(img)}
                     alt={`${product.name} ${idx + 1}`}
                     fill

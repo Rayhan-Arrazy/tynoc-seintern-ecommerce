@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import type { Product } from '@/types';
 import { getImageUrl, formatPrice } from '@/lib/utils';
 import Rating from '@/components/ui/Rating';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface NewArrivalsProps {
   products: Product[];
@@ -39,7 +39,7 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
             className="bg-white rounded-xl border border-gray-100 overflow-hidden hover:shadow-lg transition-all duration-300 group"
           >
             <div className="relative aspect-square bg-gray-50 overflow-hidden">
-              <Image
+              <SafeImage
                 src={getImageUrl(product.images?.[0] || product.id)}
                 alt={product.name}
                 fill

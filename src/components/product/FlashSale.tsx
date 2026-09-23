@@ -2,10 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
 import { Zap } from 'lucide-react';
 import type { Product } from '@/types';
 import { getImageUrl, formatPrice, calculateDiscount } from '@/lib/utils';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface FlashSaleProps {
   products: Product[];
@@ -82,7 +82,7 @@ export default function FlashSale({ products }: FlashSaleProps) {
                 className="flex-shrink-0 w-56 bg-white rounded-xl overflow-hidden hover:shadow-lg transition-all duration-300 group"
               >
                 <div className="relative aspect-square bg-gray-50 overflow-hidden">
-                  <Image
+                  <SafeImage
                     src={getImageUrl(product.images?.[0] || product.id)}
                     alt={product.name}
                     fill

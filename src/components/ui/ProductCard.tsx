@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { Heart, ShoppingCart } from 'lucide-react';
 import { Product } from '@/types';
 import { useCart } from '@/context/CartContext';
@@ -9,6 +8,7 @@ import { useWishlist } from '@/context/WishlistContext';
 import { getImageUrl } from '@/lib/utils';
 import Rating from './Rating';
 import PriceTag from './PriceTag';
+import SafeImage from './SafeImage';
 
 interface ProductCardProps {
   product: Product;
@@ -38,7 +38,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     <Link href={`/products/${product.id}`} className="group block">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden transition-all duration-300 hover:shadow-lg hover:scale-[1.02]">
         <div className="relative aspect-square overflow-hidden bg-gray-100">
-          <Image
+          <SafeImage
             src={getImageUrl(product.images?.[0] || product.id)}
             alt={product.name}
             fill

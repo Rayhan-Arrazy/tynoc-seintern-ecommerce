@@ -1,11 +1,11 @@
 'use client';
 
 import Link from 'next/link';
-import Image from 'next/image';
 import { X, Minus, Plus } from 'lucide-react';
 import { CartItem as CartItemType } from '@/types';
 import { formatPrice, getImageUrl } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
+import SafeImage from '@/components/ui/SafeImage';
 
 interface CartItemProps {
   item: CartItemType;
@@ -21,7 +21,7 @@ export default function CartItem({ item }: CartItemProps) {
       {/* Product Image */}
       <Link href={`/products/${product.id}`} className="shrink-0">
         <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-lg overflow-hidden bg-gray-100">
-          <Image
+          <SafeImage
             src={getImageUrl(product.images[0] || product.id)}
             alt={product.name}
             fill

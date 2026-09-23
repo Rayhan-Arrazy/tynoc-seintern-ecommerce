@@ -23,13 +23,10 @@ export function truncate(text: string, length: number): string {
 }
 
 export function getImageUrl(imageId?: string): string {
-  if (!imageId) {
-    return `https://picsum.photos/seed/placeholder/600/600`;
-  }
-  if (imageId.startsWith("http://") || imageId.startsWith("https://")) {
+  if (imageId && (imageId.startsWith("http://") || imageId.startsWith("https://"))) {
     return imageId;
   }
-  return `https://picsum.photos/seed/${imageId}/600/600`;
+  return "";
 }
 
 export function formatDate(date: string | Date): string {

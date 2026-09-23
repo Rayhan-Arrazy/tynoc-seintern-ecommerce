@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import Image from 'next/image';
 import {
   Loader2,
   ArrowLeft,
@@ -19,6 +18,7 @@ import {
 import type { Order, OrderStatus } from '@/types';
 import { formatPrice, formatDate, getImageUrl } from '@/lib/utils';
 import { useCart } from '@/context/CartContext';
+import SafeImage from '@/components/ui/SafeImage';
 
 const statusColors: Record<OrderStatus, string> = {
   pending: 'bg-yellow-100 text-yellow-700',
@@ -236,7 +236,7 @@ export default function OrderDetailPage() {
               {order.items.map((item) => (
                 <div key={item.id} className="flex gap-4">
                   <div className="relative w-20 h-20 rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                    <Image
+                    <SafeImage
                       src={getImageUrl(item.product.images[0] || item.product.id)}
                       alt={item.product.name}
                       fill
