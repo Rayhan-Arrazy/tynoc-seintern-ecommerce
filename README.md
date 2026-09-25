@@ -575,7 +575,10 @@ A tabbed interface with sections for Profile (name, email, avatar display), Orde
 
 ## 12. License
 
-This project was developed as a software engineering internship submission. All rights reserved.
+Copyright (C) 2026 Rayhan Arrazy. All rights reserved.
+
+This software and associated documentation files are the intellectual property of Rayhan Arrazy. Unauthorized copying, modification, distribution, or commercial use of this file, via any medium, is strictly prohibited.
+
 
 ---
 
